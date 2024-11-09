@@ -1,0 +1,11 @@
+{
+  "name": "ProjectManagement",
+  "version": "1",
+  "description": "Server for managing the backend of the project management application ",
+  "main": "index.js",
+  "author": "Gyanendra Shah",
+  "license": "MIT",
+  "dependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
