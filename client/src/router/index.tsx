@@ -1,9 +1,7 @@
-import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LayoutComponent from "../layout/index.tsx";
 import Dashboard from "../features/dashboard/index.tsx";
 import Login from "../features/auth/login.tsx";
-import Signup from "../features/auth/signup.tsx";
 
 const RoutesComponent = () => {
   const router = createBrowserRouter([
@@ -22,10 +20,6 @@ const RoutesComponent = () => {
     {
       path: "/login",
       element: <Login />, // No layout here
-    },
-    {
-      path: "/signup",
-      element: <Signup />, // No layout here
     },
   ]);
 
