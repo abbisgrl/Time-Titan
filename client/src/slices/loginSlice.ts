@@ -4,11 +4,11 @@ import axios from "axios";
 
 // First, create the thunk
 export const loginApi = createAsyncThunk(
-  "user/login",
+  "auth/login",
   async ({ email, password }: { email: string; password: string }) => {
     const response = await axios({
       method: "post",
-      url: "http://localhost:8001",
+      url: "http://localhost:8000/auth/login",
       data: {
         email,
         password,
@@ -19,11 +19,16 @@ export const loginApi = createAsyncThunk(
 );
 
 interface loginState {
-  loading: "idle" | "pending" | "succeeded" | "failed";
+  status: "idle" | "pending" | "success" | "failed";
+  data: {
+    token?: string; // Optional because it might not exist initially
+    [key: string]: any; // To allow additional fields if needed
+  } | null;
 }
 
 const initialState: loginState = {
-  loading: "idle",
+  status: "idle",
+  data: {},
 };
 
 export const loginSlice = createSlice({
@@ -32,13 +37,14 @@ export const loginSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(loginApi.fulfilled, (state, action) => {
-      state.loading = "succeeded";
+      state.status = "success";
+      state.data = action.payload;
     });
     builder.addCase(loginApi.pending, (state, action) => {
-      state.loading = "pending";
+      state.status = "pending";
     });
     builder.addCase(loginApi.rejected, (state, action) => {
-      state.loading = "failed";
+      state.status = "failed";
     });
   },
 });
