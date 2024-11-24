@@ -1,16 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "../assets/logo.png";
+import AddProject from "../features/project/AddProject";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
+import {
+  InitialProjectList,
+  ProjectList,
+} from "../slices/project/projectSlices";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const products = ["Product A", "Product B", "Product C"]; // Replace with your actual products
-  const [selectedProduct, setSelectedProduct] = useState(products[0]);
+  const [open, setOpen] = useState(false);
+
+  // State types fixed
+  const [projectList, setProjectList] = useState<ProjectList[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ProjectList | null>(
+    null
+  );
+
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  const handleProductSelect = (product: string) => {
+  const projectListReducer: InitialProjectList = useSelector(
+    (state: RootState) => state.projectList
+  );
+
+  useEffect(() => {
+    if (projectListReducer.status === "success") {
+      setProjectList(projectListReducer.data);
+      console.log(projectListReducer.data);
+      setSelectedProduct(projectListReducer.data[0] || null); // Handle if data is empty
+    }
+  }, [projectListReducer]);
+
+  const handleProductSelect = (product: ProjectList) => {
     setSelectedProduct(product);
     setDropdownOpen(false);
   };
+
   return (
     <div>
       <div className="bg-white">
@@ -21,6 +47,7 @@ const Navbar = () => {
               <div>
                 <img src={Logo} className="block h-16 w-auto" alt="Logo" />
               </div>
+
               {/* Responsive Search Box */}
               <div className="relative flex-1 lg:ml-40 mx-4">
                 <p className="pl-3 items-center flex absolute inset-y-0 left-0 pointer-events-none">
@@ -47,13 +74,13 @@ const Navbar = () => {
                 />
               </div>
 
-              {/* project switcher */}
+              {/* Project switcher */}
               <div className="relative">
                 <button
                   onClick={toggleDropdown}
                   className="bg-gray-100 border border-gray-300 text-sm text-gray-700 rounded-lg px-3 py-1 flex items-center space-x-2 hover:bg-gray-200 transition"
                 >
-                  <span>{selectedProduct}</span>
+                  <span>{selectedProduct?.name || "Select a project"}</span>
                   <svg
                     className={`w-4 h-4 transform transition ${
                       dropdownOpen ? "rotate-180" : "rotate-0"
@@ -73,21 +100,22 @@ const Navbar = () => {
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-50">
-                    {products.map((product) => (
+                    {projectList.map((product) => (
                       <p
-                        key={product}
+                        key={product.projectId}
                         onClick={() => handleProductSelect(product)}
                         className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
                       >
-                        {product}
+                        {product.name}
                       </p>
                     ))}
                   </div>
                 )}
               </div>
+
               {/* Add Project Button */}
               <button
-                onClick={() => console.log("Add Project")}
+                onClick={() => setOpen(!open)}
                 className="text-indigo-600 text-sm flex items-center space-x-1 hover:text-indigo-700 transition ml-2"
               >
                 <svg
@@ -153,6 +181,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      <AddProject open={open} setOpen={setOpen} data={""} />
     </div>
   );
 };

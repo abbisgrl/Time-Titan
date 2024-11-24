@@ -1,13 +1,23 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import Project from '../models/project';
-import { validateRequiredFields } from 'src/helpers/validators';
+import { validateRequiredFields } from '../helpers/validators';
+import { UserRequest } from 'src/middlewares/authMiddlewave';
 
-export const getProjectsList = async (req: express.Request, res: express.Response) => {
-  console.log({ req });
+export const getProjectsList = async (req: UserRequest, res: express.Response) => {
+  const { userId } = req.user || {};
+  console.dir({ userId }, { depth: null });
   try {
-    const projects = await Project.find({}, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
-    res.status(200).json(projects);
+    const projectsList = await Project.aggregate([
+      {
+        $match: {
+          $or: [{ 'owner.userId': userId }, { members: userId }],
+        },
+      },
+      { $project: { name: 1, description: 1, logo: 1, projectId: 1 } },
+    ]);
+
+    res.status(200).json(projectsList);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -15,7 +25,7 @@ export const getProjectsList = async (req: express.Request, res: express.Respons
 };
 
 export const addProject = async (req: express.Request, res: express.Response) => {
-  const { name, owner } = req.body || {};
+  const { name, description, owner, logo } = req.body || {};
   const validationError = validateRequiredFields([{ name: 'name', value: name, message: 'Name is required.' }], res);
 
   if (validationError) return;
@@ -26,8 +36,9 @@ export const addProject = async (req: express.Request, res: express.Response) =>
     },
   ]);
 
+  console.dir({ projectDetails }, { depth: null });
   try {
-    if (projectDetails) {
+    if (projectDetails.length) {
       // If the project already has same name
       return res.status(400).send({ message: 'Project with same name is already created' });
     } else {
@@ -38,9 +49,11 @@ export const addProject = async (req: express.Request, res: express.Response) =>
         projectId: uuidv4(),
         members: [],
         isActive: true,
+        logo,
+        description,
       };
-      await Project.create(newProject);
-      return res.status(401).send({ message: 'New project created successfully' });
+      const data = await Project.create(newProject);
+      return res.status(200).send({ message: 'New project created successfully', data });
     }
   } catch (error) {
     console.error('Error processing user:', error);

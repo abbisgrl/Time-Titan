@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { handleError } from '../helpers/error';
 import { validateRequiredFields } from '../helpers/validators';
+import { UserRequest } from '../middlewares/authMiddlewave';
 
 export const loginHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const { email, password } = req.body;
@@ -83,5 +84,15 @@ export const registerHandler = async (req: express.Request, res: express.Respons
       });
   } catch (err) {
     next(err);
+  }
+};
+
+export const userDetails = async (req: UserRequest, res: express.Response) => {
+  const { userId } = req?.user || {};
+  const userDetailsData = await User.findOne({ userId }, { name: 1, email: 1, userId: 1 });
+  if (!userDetailsData) {
+    res.status(401).json({ message: 'User Not Found' });
+  } else {
+    res.status(200).json(userDetailsData);
   }
 };

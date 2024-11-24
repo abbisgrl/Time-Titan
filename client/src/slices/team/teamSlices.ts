@@ -1,17 +1,17 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import Cookies from "js-cookie";
+
+import callApi from "../../misc/callApi";
 
 export interface User {
-  userId: string; // Unique identifier
-  createdAt: string; // ISO 8601 date string
+  userId: string;
+  createdAt: string;
   email: string;
   isActive: boolean;
   name: string;
-  password: string; // Assuming this is hashed, so keep it as string
+  password: string;
   role: string;
-  updatedAt: string; // ISO 8601 date string
-  __v: number; // Version key
+  updatedAt: string;
+  __v: number;
 }
 
 interface InitialState {
@@ -25,11 +25,7 @@ const initialState: InitialState = {
 };
 
 export const teamListApi = createAsyncThunk("teamList", async () => {
-  const response = await axios({
-    method: "get",
-    url: "http://localhost:8000/team/list",
-    headers: { token: Cookies.get("token") },
-  });
+  const response: any = await callApi("http://localhost:8000/team/list", "get");
   return response.data;
 });
 
@@ -52,4 +48,4 @@ export const teamListSlice = createSlice({
   },
 });
 
-export default teamListSlice.reducer;
+export const teamListReducer = teamListSlice.reducer;

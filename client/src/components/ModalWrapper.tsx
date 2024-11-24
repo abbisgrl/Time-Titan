@@ -15,8 +15,7 @@ const ModalWrapper = ({
   return (
     <Modal
       isOpen={open}
-      onRequestClose={() => setOpen(false)}
-      overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center"
+      overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
       className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto p-6"
     >
       <button

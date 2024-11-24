@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { User, teamListApi } from "../../slices/teamListSlice";
+import { User, teamListApi } from "../../slices/team/teamSlices";
 import { AppDispatch, RootState } from "../../store";
 import Title from "../../components/title";
 

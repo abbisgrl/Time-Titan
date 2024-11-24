@@ -3,7 +3,7 @@ import CoverImage from "../../assets/logo.png";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
-import { loginApi } from "../../slices/loginSlice";
+import { loginApi } from "../../slices/auth/authSlices";
 import { AppDispatch, RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
 const Login = () => {

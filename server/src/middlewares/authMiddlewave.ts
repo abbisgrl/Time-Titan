@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import User from '../models/user';
 import express from 'express';
 
-interface UserRequest extends express.Request {
+export interface UserRequest extends express.Request {
   user?: {
     email: string;
     isAdmin: boolean;
@@ -14,11 +14,12 @@ interface UserRequest extends express.Request {
 export const protectRoute = async (req: UserRequest, res: express.Response, next: express.NextFunction) => {
   try {
     let token: string | undefined;
+    console.dir({ req: req.headers }, { depth: null });
 
-    if (typeof req.headers.token === 'string') {
-      token = req.headers.token; // Extract the token
-    } else if (Array.isArray(req.headers.token)) {
-      token = req.headers.token[0]; // Use the first token if it's an array
+    if (typeof req.headers.authorization === 'string') {
+      token = req.headers.authorization; // Extract the token
+    } else if (Array.isArray(req.headers.authorization)) {
+      token = req.headers.authorization[0]; // Use the first token if it's an array
     } else {
       throw new Error('Invalid token format in headers');
     }
@@ -27,6 +28,7 @@ export const protectRoute = async (req: UserRequest, res: express.Response, next
       const JWT_SECRET: string = process.env.JWT_SECRET || '';
       const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
       const resp = await User.findOne({ userId: decodedToken.userId }, { isOwner: 1, isAdmin: 1, email: 1 });
+      console.dir({ resp }, { depth: null });
 
       // Check if the user was found
       if (!resp) {
