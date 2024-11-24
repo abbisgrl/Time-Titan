@@ -37,13 +37,14 @@ export const loginSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(loginApi.fulfilled, (state, action) => {
+      console.log("inside the success block");
       state.status = "success";
       state.data = action.payload;
     });
-    builder.addCase(loginApi.pending, (state, action) => {
+    builder.addCase(loginApi.pending, (state) => {
       state.status = "pending";
     });
-    builder.addCase(loginApi.rejected, (state, action) => {
+    builder.addCase(loginApi.rejected, (state) => {
       state.status = "failed";
     });
   },

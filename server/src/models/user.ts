@@ -21,6 +21,10 @@ const UserSchema = new mongoose.Schema(
     },
     role: { type: String, required: true },
     isAdmin: { type: Boolean, required: true, default: false },
+    isOwner: { type: Boolean, required: true, default: false },
+    projects: {
+      type: [String],
+    },
     tasks: [{ type: String, ref: 'Task' }],
     isActive: { type: Boolean, required: true, default: true },
     userId: {

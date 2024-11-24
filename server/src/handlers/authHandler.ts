@@ -1,9 +1,10 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid'; // random
+import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { handleError } from '../helpers/error';
+import { validateRequiredFields } from '../helpers/validators';
 
 export const loginHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const { email, password } = req.body;
@@ -17,7 +18,7 @@ export const loginHandler = async (req: express.Request, res: express.Response, 
 
     const validPassword = await bcrypt.compareSync(password, user.password);
     if (!validPassword) {
-      return next(handleError({ name: 'user not found', statusCode: 201, message: 'Wrong password' }, res));
+      return next(handleError({ name: 'user not found', statusCode: 401, message: 'Wrong password' }, res));
     }
 
     // create jwt token
@@ -32,18 +33,21 @@ export const loginHandler = async (req: express.Request, res: express.Response, 
   }
 };
 
+// only for owner registration
 export const registerHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { name, email, password, isAdmin, role } = req.body;
+  const { name, email, password, role } = req.body;
   console.dir({ body: req.body }, 'body');
-  if (!email) {
-    return res.status(400).send({ message: 'Missing email.', field: 'email' });
-  }
-  if (!name) {
-    return res.status(400).send({ message: 'Missing name', field: 'name' });
-  }
-  if (!password) {
-    return res.status(400).send({ message: 'Missing password', field: 'password' });
-  }
+
+  const validationError = validateRequiredFields(
+    [
+      { name: 'email', value: email, message: 'Email is required.' },
+      { name: 'name', value: name, message: 'Name is required.' },
+      { name: 'password', value: password, message: 'Password is required.' },
+    ],
+    res,
+  );
+
+  if (validationError) return;
 
   try {
     const existingUser = await User.findOne({ email }).exec();
@@ -52,16 +56,16 @@ export const registerHandler = async (req: express.Request, res: express.Respons
         message: 'Email is already in use.',
       });
     }
-    // Step 1 - Create and save the userconst salt = bcrypt.genSaltSync(10);
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
     const newUser = new User({
       name,
       email,
-      isAdmin,
+      isAdmin: false,
       role,
       password: hashedPassword,
       userId: uuidv4(),
+      isOwner: true,
     });
 
     const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -69,7 +73,6 @@ export const registerHandler = async (req: express.Request, res: express.Respons
     newUser
       .save()
       .then((user) => {
-        // create jwt token
         const token = jwt.sign({ userId: user.userId }, JWT_SECRET, {
           expiresIn: '9999 years',
         });

@@ -1,23 +1,27 @@
-import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import Cookies from "js-cookie";
-
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
 const LayoutComponent = () => {
-  const navigate = useNavigate();
+  const token = Cookies.get("token");
 
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, []);
-
-  return (
-    <>
-      <h1>Layout</h1>
-      <Outlet />
-    </>
-  );
+  if (token) {
+    return (
+      <>
+        <div className="w-full h-screen flex flex-col">
+          <Navbar />
+          <div className="flex flex-row overflow-y-hidden">
+            <Sidebar />
+            <div className="w-[85%] p-4 2xl:px-10 overflow-y-auto">
+              <Outlet />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  } else {
+    return <Navigate to="/login" />;
+  }
 };
 
 export default LayoutComponent;

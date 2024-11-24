@@ -1,5 +1,5 @@
 import "./login.css";
-import CoverImage from "../../assets/large.png";
+import CoverImage from "../../assets/logo.png";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
@@ -21,7 +21,7 @@ const Login = () => {
     } else if (loginReducer.status === "failed") {
       console.log(loginReducer.data);
     }
-  }, [loginReducer]);
+  }, [JSON.stringify(loginReducer)]);
 
   const handleSubmit = (e: any) => {
     e.preventDefault();

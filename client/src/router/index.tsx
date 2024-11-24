@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LayoutComponent from "../layout/index.tsx";
 import Dashboard from "../features/dashboard/index.tsx";
 import Login from "../features/auth/login.tsx";
+import TeamListing from "../features/team/team.tsx";
 
 const RoutesComponent = () => {
   const router = createBrowserRouter([
@@ -14,6 +15,10 @@ const RoutesComponent = () => {
           path: "/dashboard",
           element: <Dashboard />,
           //   loader: teamLoader,
+        },
+        {
+          path: "/teams",
+          element: <TeamListing />,
         },
       ],
     },

@@ -25,7 +25,7 @@ app.use(morgan('dev'));
 app.use(cors());
 
 app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
+app.use('/team', userRoutes);
 app.use('/tasks', taskRoutes);
 
 // catch 404 and forward to error handler
