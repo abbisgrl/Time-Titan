@@ -1,21 +1,23 @@
 import express from 'express';
+import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { validateRequiredFields } from '../helpers/validators';
+import { UserRequest } from 'src/middlewares/authMiddlewave';
 
-export const getTeamList = async (req: express.Request, res: express.Response) => {
-  console.log({ req });
+export const getTeamList = async (req: UserRequest, res: express.Response) => {
+  const { userId } = req.user || {};
+
   try {
-    const users = await User.find({}, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
+    const users = await User.find({ ownerId: userId, isOwner: false }, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
     res.status(200).json(users);
   } catch (error) {
-    console.log(error);
     return res.status(400).json({ status: false, message: error.message });
   }
 };
 
 export const addTeamMember = async (req: express.Request, res: express.Response) => {
-  const { name, email, password, role, projectIds } = req.body || {};
+  const { name, email, password, role, projectIds, ownerId } = req.body || {};
   const validationError = validateRequiredFields(
     [
       { name: 'email', value: email, message: 'Email is required.' },
@@ -30,30 +32,34 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
 
   const usersDetails = await User.aggregate([
     {
-      $match: { email }, // First filter by email
+      $match: { email },
     },
   ]);
 
   try {
-    if (usersDetails) {
+    if (usersDetails?.length) {
       // If the user already added
       return res.status(400).send({ message: 'User already added' });
     } else {
       // If the user doesn't exist, create a new user
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
       const newUser = {
         name,
         email,
-        password,
+        password: hashedPassword,
         role,
         projects: [...projectIds],
         userId: uuidv4(),
         isActive: true,
+        memberPassword: password,
+        ownerId,
       };
       await User.create(newUser);
-      return res.status(401).send({ message: 'New user created successfully' });
+      return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {
-    console.error('Error processing user:', error);
     return res.status(500).send({ message: 'An error occurred while processing the user' });
   }
 };
@@ -65,7 +71,6 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
       $match: { userId }, // First filter by email
     },
   ]);
-  console.dir({ usersDetails }, { depth: null });
   if (!usersDetails) {
     return res.status(401).send({ message: 'User does not exists' });
   } else {
@@ -88,5 +93,21 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
   } else {
     await User.updateOne({ userId }, { $set: data });
     return res.status(200).send({ message: 'User Updated successfully' });
+  }
+};
+
+export const viewUser = async (req: express.Request, res: express.Response) => {
+  const { userId } = req.params || {};
+
+  const usersDetails = await User.aggregate([
+    {
+      $match: { userId },
+    },
+  ]);
+
+  if (!usersDetails) {
+    return res.status(401).send({ message: 'User does not exists' });
+  } else {
+    return res.status(200).send({ message: 'User Updated successfully', usersDetails });
   }
 };

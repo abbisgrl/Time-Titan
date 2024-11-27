@@ -13,11 +13,9 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(loginReducer);
     if (loginReducer.status === "success") {
       Cookies.set("token", loginReducer?.data?.token || "");
       navigate("/");
-      console.log(loginReducer.data);
     } else if (loginReducer.status === "failed") {
       console.log(loginReducer.data);
     }

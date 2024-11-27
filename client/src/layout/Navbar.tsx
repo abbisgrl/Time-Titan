@@ -27,7 +27,6 @@ const Navbar = () => {
   useEffect(() => {
     if (projectListReducer.status === "success") {
       setProjectList(projectListReducer.data);
-      console.log(projectListReducer.data);
       setSelectedProduct(projectListReducer.data[0] || null); // Handle if data is empty
     }
   }, [projectListReducer]);

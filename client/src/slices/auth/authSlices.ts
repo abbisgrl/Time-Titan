@@ -58,7 +58,6 @@ export const loginSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(loginApi.fulfilled, (state, action) => {
-      console.log("inside the success block");
       state.status = "success";
       state.data = action.payload;
     });
@@ -77,7 +76,6 @@ export const userDetailsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(userDetailsApi.fulfilled, (state, action) => {
-      console.log("inside the success block");
       state.status = "success";
       state.data = action.payload;
     });

@@ -32,6 +32,12 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    memberPassword: {
+      type: String,
+      required: true,
+      min: 5,
+    },
+    ownerId: { type: String, required: true },
   },
   { timestamps: true },
 );
