@@ -6,7 +6,6 @@ import { UserRequest } from 'src/middlewares/authMiddlewave';
 
 export const getProjectsList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
-  console.dir({ userId }, { depth: null });
   try {
     const projectsList = await Project.aggregate([
       {
@@ -36,7 +35,6 @@ export const addProject = async (req: express.Request, res: express.Response) =>
     },
   ]);
 
-  console.dir({ projectDetails }, { depth: null });
   try {
     if (projectDetails.length) {
       // If the project already has same name
@@ -68,7 +66,6 @@ export const deleteProject = async (req: express.Request, res: express.Response)
       $match: { projectId }, // First filter by email
     },
   ]);
-  console.dir({ projectDetails }, { depth: null });
   if (!projectDetails) {
     return res.status(401).send({ message: 'Project does not exists' });
   } else {

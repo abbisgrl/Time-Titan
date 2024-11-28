@@ -1,10 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { loginReducer, userDetailsReducer } from "../slices/auth/authSlices";
-import {
-  teamCreateReducer,
-  teamDetailsReducer,
-  teamListReducer,
-} from "../slices/team/teamSlices";
+import { teamReducer } from "../slices/team/teamSlices";
 import {
   createProjectReducer,
   getProjectListReducer,
@@ -13,10 +9,8 @@ import {
 export const store = configureStore({
   reducer: {
     login: loginReducer,
-    teamList: teamListReducer,
-    createTeam: teamCreateReducer,
-    teamDetails: teamDetailsReducer,
     createProject: createProjectReducer,
+    teamReducer: teamReducer,
     userDetails: userDetailsReducer,
     projectList: getProjectListReducer,
   },

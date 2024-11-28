@@ -1,10 +1,7 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
-import { roleMap } from "../../misc";
 
-type RoleKeys = keyof typeof roleMap;
-
+// Define types
 export interface User {
   userId?: string;
   createdAt?: string;
@@ -12,7 +9,7 @@ export interface User {
   isActive?: boolean;
   name?: string;
   password?: string;
-  role?: RoleKeys;
+  role?: string;
   updatedAt?: string;
   memberPassword?: string;
   ownerId?: string;
@@ -29,120 +26,104 @@ export interface TeamData {
   ownerId?: string;
 }
 
-interface InitialListState {
+interface ApiState<T> {
   status: "idle" | "pending" | "success" | "failed";
-  data: User[];
-}
-interface InitialCreateState {
-  status: "idle" | "pending" | "success" | "failed";
-  data: any[];
+  data: T;
 }
 
-interface InitialTeamViewState {
-  status: "idle" | "pending" | "success" | "failed";
-  data: User;
+interface TeamState {
+  list: ApiState<User[]>;
+  create: ApiState<any[]>;
+  details: ApiState<User>;
+  delete: ApiState<User>;
+  update: ApiState<User>;
 }
 
-const initialListState: InitialListState = {
-  status: "idle",
-  data: [],
+export const teamApi = {
+  list: createAsyncThunk<User[]>("team/list", async () => {
+    const response = await callApi("http://localhost:8000/team/list", "get");
+    return (response as { data: User[] }).data;
+  }),
+
+  create: createAsyncThunk<any[], TeamData>(
+    "team/create",
+    async (teamData: TeamData) => {
+      const response = await callApi(
+        "http://localhost:8000/team/add",
+        "post",
+        teamData
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+
+  details: createAsyncThunk<User, string>(
+    "team/details",
+    async (userId: string) => {
+      const response = await callApi(
+        `http://localhost:8000/team/view/${userId}`,
+        "get"
+      );
+      return (response as { data: User }).data;
+    }
+  ),
+
+  update: createAsyncThunk<User, { teamData: TeamData; userId: string }>(
+    "team/update",
+    async ({ teamData, userId }) => {
+      const response = await callApi(
+        `http://localhost:8000/team/update/${userId}`,
+        "put",
+        teamData
+      );
+      return (response as { data: User }).data;
+    }
+  ),
+
+  delete: createAsyncThunk<User, string>(
+    "team/delete",
+    async (userId: string) => {
+      const response = await callApi(
+        `http://localhost:8000/team/delete/${userId}`,
+        "delete"
+      );
+      return (response as { data: User }).data;
+    }
+  ),
 };
 
-const initialCreateState: InitialCreateState = {
-  status: "idle",
-  data: [],
+// Initial state
+const initialState: TeamState = {
+  list: { status: "idle", data: [] },
+  create: { status: "idle", data: [] },
+  details: { status: "idle", data: {} },
+  update: { status: "idle", data: {} },
+  delete: { status: "idle", data: {} },
 };
 
-const initialTeamViewState: InitialTeamViewState = {
-  status: "idle",
-  data: {},
-};
-
-export const teamListApi = createAsyncThunk("teamList", async () => {
-  const response: any = await callApi("http://localhost:8000/team/list", "get");
-  return response.data;
-});
-
-export const teamCreateApi = createAsyncThunk(
-  "teamCreate",
-  async (teamData: TeamData) => {
-    const response: any = await callApi(
-      "http://localhost:8000/team/add",
-      "post",
-      teamData
-    );
-    return response.data;
-  }
-);
-
-export const teamDetailsApi = createAsyncThunk(
-  "teamDetails",
-  async (userId: string) => {
-    const response: any = await callApi(
-      `http://localhost:8000/team/view/${userId}`,
-      "get"
-    );
-    return response.data;
-  }
-);
-
-export const teamListSlice = createSlice({
-  name: "teamList",
-  initialState: initialListState,
+// Slice
+const teamSlice = createSlice({
+  name: "team",
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(teamListApi.fulfilled, (state, action: any) => {
-      state.status = "success";
-      state.data = action.payload;
-    });
-    builder.addCase(teamListApi.pending, (state) => {
-      state.status = "pending";
-    });
-    builder.addCase(teamListApi.rejected, (state, action: any) => {
-      state.status = "failed";
-      state.data = action.payload;
+    Object.values(teamApi).forEach((api) => {
+      builder
+        .addCase(api.fulfilled, (state, action: PayloadAction<any>) => {
+          const key = api.typePrefix.split("/")[1] as keyof TeamState;
+          state[key].status = "success";
+          state[key].data = action.payload;
+        })
+        .addCase(api.pending, (state, action) => {
+          const key = action.type.split("/")[1] as keyof TeamState;
+          state[key].status = "pending";
+        })
+        .addCase(api.rejected, (state, action) => {
+          const key = action.type.split("/")[1] as keyof TeamState;
+          state[key].status = "failed";
+        });
     });
   },
 });
 
-export const teamCreateSlice = createSlice({
-  name: "teamCreate",
-  initialState: initialCreateState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(teamCreateApi.fulfilled, (state, action: any) => {
-      state.status = "success";
-      state.data = action.payload;
-    });
-    builder.addCase(teamCreateApi.pending, (state) => {
-      state.status = "pending";
-    });
-    builder.addCase(teamCreateApi.rejected, (state, action: any) => {
-      state.status = "failed";
-      state.data = action.payload;
-    });
-  },
-});
-
-export const teamDetailsSlice = createSlice({
-  name: "teamDetails",
-  initialState: initialTeamViewState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(teamDetailsApi.fulfilled, (state, action: any) => {
-      state.status = "success";
-      state.data = action.payload?.usersDetails?.[0];
-    });
-    builder.addCase(teamDetailsApi.pending, (state) => {
-      state.status = "pending";
-    });
-    builder.addCase(teamDetailsApi.rejected, (state, action: any) => {
-      state.status = "failed";
-      state.data = action.payload;
-    });
-  },
-});
-
-export const teamListReducer = teamListSlice.reducer;
-export const teamCreateReducer = teamCreateSlice.reducer;
-export const teamDetailsReducer = teamDetailsSlice.reducer;
+export const teamReducer = teamSlice.reducer;

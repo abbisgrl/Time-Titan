@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { User, teamListApi } from "../../slices/team/teamSlices";
+import { User, teamApi } from "../../slices/team/teamSlices";
 import { AppDispatch, RootState } from "../../store";
 import Title from "../../components/title";
 import AddTeamMember from "./addTeamMember";
@@ -11,7 +11,9 @@ const TeamListing = () => {
   const [teamEditId, setTeamEditId] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
-  const teamList = useSelector((state: RootState) => state.teamList?.data);
+  const teamList = useSelector(
+    (state: RootState) => state.teamReducer.list?.data
+  );
   const projectData = useSelector((state: RootState) => state.projectList);
 
   const ProjectList = useCallback(() => {
@@ -22,7 +24,7 @@ const TeamListing = () => {
   }, [projectData]);
 
   useEffect(() => {
-    dispatch(teamListApi());
+    dispatch(teamApi.list());
   }, []);
 
   useEffect(() => {
@@ -38,12 +40,12 @@ const TeamListing = () => {
   }, [openAddModal]);
 
   const handleEdit = (id: any) => {
-    console.log("Edit user with ID:", id);
     setTeamEditId(id);
   };
 
   const handleDelete = (id: any) => {
-    console.log("Delete user with ID:", id);
+    console.log({ id });
+    dispatch(teamApi.delete(id));
   };
 
   return (
@@ -70,11 +72,13 @@ const TeamListing = () => {
               <div className="col-span-1 px-4 py-3">Role</div>
               <div className="col-span-1 px-4 py-3">Active</div>
               <div className="col-span-1 px-4 py-3">Projects</div>
-              <div className="col-span-2 px-4 py-3 text-center">Actions</div>
+              <div className="col-span-1 px-4 py-3 text-center">Actions</div>
             </div>
             {teamList.map((user: User) => {
               if (!user.userId) return null;
-              const roleLabel = user.role ? roleMap[user.role] : "Admin";
+              const roleLabel = user.role
+                ? roleMap[user.role as keyof typeof roleMap]
+                : "Admin";
               return (
                 <div
                   key={user.userId}
@@ -86,7 +90,7 @@ const TeamListing = () => {
                   <div className="col-span-3 px-4 py-3 text-gray-800">
                     {user.email}
                   </div>
-                  <div className="col-span-1 px-4 py-3 text-gray-800">
+                  <div className="col-span-2 px-4 py-3 text-gray-800">
                     {user.memberPassword}
                   </div>
                   <div className="col-span-1 px-4 py-3 text-gray-800">
@@ -103,7 +107,7 @@ const TeamListing = () => {
                       </span>
                     )}
                   </div>
-                  <div className="col-span-2 px-4 py-3 text-gray-800">
+                  <div className="col-span-1 px-4 py-3 text-gray-800">
                     <div className="relative group">
                       <div className="hidden group-hover:block absolute bg-gray-100 p-2 rounded shadow-md w-48 mt-6">
                         <ul className="text-sm">
@@ -151,7 +155,9 @@ const TeamListing = () => {
           <div className="block md:hidden">
             {teamList.map((user: User) => {
               if (!user.userId) return null;
-              const roleLabel = user.role ? roleMap[user.role] : "Admin";
+              const roleLabel = user.role
+                ? roleMap[user.role as keyof typeof roleMap]
+                : "Admin";
               return (
                 <div
                   key={user.userId}

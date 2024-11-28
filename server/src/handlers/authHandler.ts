@@ -37,7 +37,6 @@ export const loginHandler = async (req: express.Request, res: express.Response, 
 // only for owner registration
 export const registerHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const { name, email, password, role } = req.body;
-  console.dir({ body: req.body }, 'body');
 
   const validationError = validateRequiredFields(
     [

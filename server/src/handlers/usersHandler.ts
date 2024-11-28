@@ -17,7 +17,7 @@ export const getTeamList = async (req: UserRequest, res: express.Response) => {
 };
 
 export const addTeamMember = async (req: express.Request, res: express.Response) => {
-  const { name, email, password, role, projectIds, ownerId } = req.body || {};
+  const { name, email, password, role, projects, ownerId } = req.body || {};
   const validationError = validateRequiredFields(
     [
       { name: 'email', value: email, message: 'Email is required.' },
@@ -45,12 +45,13 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
+      console.dir({ projects }, { depth: null });
       const newUser = {
         name,
         email,
         password: hashedPassword,
         role,
-        projects: [...projectIds],
+        projects: [...projects],
         userId: uuidv4(),
         isActive: true,
         memberPassword: password,
@@ -60,7 +61,8 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
       return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {
-    return res.status(500).send({ message: 'An error occurred while processing the user' });
+    console.log(error);
+    return res.status(500).send({ message: 'An error occurred while processing the user', error });
   }
 };
 
@@ -80,7 +82,7 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 };
 
 export const updateUser = async (req: express.Request, res: express.Response) => {
-  const { data } = req.body || {};
+  const { name, email, password, role, projects, ownerId } = req.body || {};
   const { userId } = req.params || {};
 
   const usersDetails = await User.aggregate([
@@ -88,9 +90,11 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
       $match: { userId },
     },
   ]);
+  const data = { name, email, password, role, projects, ownerId };
   if (!usersDetails) {
     return res.status(401).send({ message: 'User does not exists' });
   } else {
+    console.dir({ body: req.body, data }, { depth: null });
     await User.updateOne({ userId }, { $set: data });
     return res.status(200).send({ message: 'User Updated successfully' });
   }
