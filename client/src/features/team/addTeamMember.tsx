@@ -7,7 +7,6 @@ import FormInput from "../../components/FormInput";
 import { AppDispatch, RootState } from "../../store";
 import {
   TeamData,
-  User,
   teamCreateApi,
   teamDetailsApi,
 } from "../../slices/team/teamSlices";
@@ -28,7 +27,7 @@ const AddTeamMember = ({
     (state: RootState) => state.teamDetails
   );
 
-  const [formData, setFormData] = useState<Partial<User>>({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
@@ -55,7 +54,7 @@ const AddTeamMember = ({
       const { name, email, memberPassword, role, projects } =
         teamMemberDetails.data || {};
 
-      const teamDetails = {
+      const teamDetails: any = {
         name,
         email,
         password: memberPassword,
