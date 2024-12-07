@@ -3,6 +3,7 @@ import LayoutComponent from "../layout/index.tsx";
 import Dashboard from "../features/dashboard/index.tsx";
 import Login from "../features/auth/login.tsx";
 import TeamListing from "../features/team/team.tsx";
+import Tasks from "../features/tasks/tasks.tsx";
 
 const RoutesComponent = () => {
   const router = createBrowserRouter([
@@ -16,6 +17,7 @@ const RoutesComponent = () => {
           element: <Dashboard />,
           //   loader: teamLoader,
         },
+        { path: "/tasks", element: <Tasks /> },
         {
           path: "/teams",
           element: <TeamListing />,

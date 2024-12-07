@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store";
 import { userDetailsApi } from "../slices/auth/authSlices";
-import { getProjectsListApi } from "../slices/project/projectSlices";
+import { projectApi } from "../slices/project/projectSlices";
 const LayoutComponent = () => {
   const token = Cookies.get("token");
   const dispatch = useDispatch<AppDispatch>();
@@ -14,7 +14,7 @@ const LayoutComponent = () => {
   useEffect(() => {
     if (token) {
       dispatch(userDetailsApi());
-      dispatch(getProjectsListApi());
+      dispatch(projectApi.list());
     }
   }, []);
 

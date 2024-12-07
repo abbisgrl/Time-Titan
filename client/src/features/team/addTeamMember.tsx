@@ -24,7 +24,9 @@ const AddTeamMember = ({
   teamId: string;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const projectData = useSelector((state: RootState) => state.projectList);
+  const projectData = useSelector(
+    (state: RootState) => state.projectReducer.list
+  );
   const ownerDetails = useSelector((state: RootState) => state.userDetails);
   const teamMemberDetails = useSelector(
     (state: RootState) => state.teamReducer.details

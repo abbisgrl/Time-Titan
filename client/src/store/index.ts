@@ -1,18 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { loginReducer, userDetailsReducer } from "../slices/auth/authSlices";
 import { teamReducer } from "../slices/team/teamSlices";
-import {
-  createProjectReducer,
-  getProjectListReducer,
-} from "../slices/project/projectSlices";
+import { projectReducer } from "../slices/project/projectSlices";
+import { taskReducer } from "../slices/task/taskSlices";
+import navbarReducer from "../slices/layout/navbar";
 
 export const store = configureStore({
   reducer: {
     login: loginReducer,
-    createProject: createProjectReducer,
+    projectReducer: projectReducer,
     teamReducer: teamReducer,
     userDetails: userDetailsReducer,
-    projectList: getProjectListReducer,
+    taskReducer,
+    navbarReducer,
   },
 });
 

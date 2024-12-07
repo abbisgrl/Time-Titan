@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { validateRequiredFields } from '../helpers/validators';
-import { UserRequest } from 'src/middlewares/authMiddlewave';
+import { UserRequest } from '../middlewares/authMiddlewave';
 
 export const getTeamList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
@@ -113,5 +113,15 @@ export const viewUser = async (req: express.Request, res: express.Response) => {
     return res.status(401).send({ message: 'User does not exists' });
   } else {
     return res.status(200).send({ message: 'User Updated successfully', usersDetails });
+  }
+};
+
+export const getProjectsTeamList = async (req: express.Request, res: express.Response) => {
+  const { projectId } = req.params || {};
+  try {
+    const users = await User.find({ projects: { $in: projectId }, isOwner: false }, { name: 1, userId: 1 });
+    res.status(200).json(users);
+  } catch (error) {
+    return res.status(400).json({ status: false, message: error.message });
   }
 };

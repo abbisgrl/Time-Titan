@@ -2,9 +2,9 @@ import mongoose, { Schema } from 'mongoose';
 
 const taskSchema = new Schema(
   {
-    taskId: { type: String, required: true },
     title: { type: String, required: true },
-    date: { type: Date, default: new Date() },
+    dueDate: { type: Date, default: new Date() },
+    description: { type: String, required: true },
     priority: {
       type: String,
       default: 'normal',
@@ -16,29 +16,22 @@ const taskSchema = new Schema(
       enum: ['todo', 'in progress', 'completed'],
     },
     activities: [
-      new Schema(
-        {
-          type: {
-            type: String,
-            default: 'assigned',
-            enum: ['assigned', 'started', 'in progress', 'bug', 'completed', 'commented'],
-          },
-          activity: String,
-          date: { type: Date, default: new Date() },
-          by: { type: Schema.Types.ObjectId, ref: 'User' },
-        },
-        { _id: false }, // Disable `_id` generation for activities
-      ),
-    ],
-    subTasks: [
       {
-        title: String,
-        date: Date,
-        tag: String,
+        type: {
+          type: String,
+          default: 'assigned',
+          enum: ['assigned', 'started', 'in progress', 'bug', 'completed', 'commented'],
+        },
+        activity: String,
+        date: { type: Date, default: new Date() },
+        by: { type: Schema.Types.ObjectId, ref: 'User' },
       },
     ],
+
+    subTasks: [String],
     assets: [String],
-    team: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    team: [String],
+    projectId: { type: String, required: true },
     isTrashed: { type: Boolean, default: false },
   },
   { timestamps: true },

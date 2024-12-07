@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import Logo from "../assets/logo.png";
 import AddProject from "../features/project/AddProject";
-import { useSelector } from "react-redux";
-import { RootState } from "../store";
-import {
-  InitialProjectList,
-  ProjectList,
-} from "../slices/project/projectSlices";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store";
+import { ProjectList } from "../slices/project/projectSlices";
+import { selectCurrentProject } from "../slices/layout/navbar";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // State types fixed
+  const dispatch = useDispatch<AppDispatch>();
   const [projectList, setProjectList] = useState<ProjectList[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProjectList | null>(
     null
@@ -20,16 +18,22 @@ const Navbar = () => {
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  const projectListReducer: InitialProjectList = useSelector(
-    (state: RootState) => state.projectList
+  const projectListReducer = useSelector(
+    (state: RootState) => state.projectReducer.list
   );
 
   useEffect(() => {
     if (projectListReducer.status === "success") {
       setProjectList(projectListReducer.data);
-      setSelectedProduct(projectListReducer.data[0] || null); // Handle if data is empty
+      setSelectedProduct(projectListReducer.data[0] || null);
     }
   }, [projectListReducer]);
+
+  useEffect(() => {
+    if (Object.keys(selectedProduct || {}).length) {
+      dispatch(selectCurrentProject(selectedProduct));
+    }
+  }, [selectedProduct]);
 
   const handleProductSelect = (product: ProjectList) => {
     setSelectedProduct(product);

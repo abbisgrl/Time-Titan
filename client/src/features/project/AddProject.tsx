@@ -5,7 +5,7 @@ import Button from "../../components/Button";
 import FormInput from "../../components/FormInput";
 import { uploadFileToS3 } from "../../misc/awsFunctions";
 import { AppDispatch, RootState } from "../../store";
-import { createProject } from "../../slices/project/projectSlices";
+import { projectApi } from "../../slices/project/projectSlices";
 
 const AddProject = ({
   open,
@@ -20,7 +20,7 @@ const AddProject = ({
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
   const createProjectData = useSelector(
-    (state: RootState) => state.createProject?.data
+    (state: RootState) => state.projectReducer?.list?.data
   );
 
   const [errors, setErrors] = useState({
@@ -28,6 +28,7 @@ const AddProject = ({
     description: { message: "", state: false },
     logo: { message: "", state: false },
   });
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -56,7 +57,7 @@ const AddProject = ({
     const { data } = userDetails;
     const { name, email, userId } = data || {};
     const owner = { name, email, userId };
-    dispatch(createProject({ ...formData, owner }));
+    dispatch(projectApi.create({ ...formData, owner }));
   };
 
   const isLoading = false;

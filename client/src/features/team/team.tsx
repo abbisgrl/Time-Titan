@@ -14,7 +14,9 @@ const TeamListing = () => {
   const teamList = useSelector(
     (state: RootState) => state.teamReducer.list?.data
   );
-  const projectData = useSelector((state: RootState) => state.projectList);
+  const projectData = useSelector(
+    (state: RootState) => state.projectReducer.list
+  );
 
   const ProjectList = useCallback(() => {
     return projectData?.data?.map((project) => ({

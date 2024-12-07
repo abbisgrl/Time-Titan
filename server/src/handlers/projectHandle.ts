@@ -2,7 +2,8 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import Project from '../models/project';
 import { validateRequiredFields } from '../helpers/validators';
-import { UserRequest } from 'src/middlewares/authMiddlewave';
+import { UserRequest } from '../middlewares/authMiddlewave';
+import User from '../models/user';
 
 export const getProjectsList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
@@ -51,6 +52,9 @@ export const addProject = async (req: express.Request, res: express.Response) =>
         description,
       };
       const data = await Project.create(newProject);
+      if (data) {
+        await User.updateOne({ userId: owner.userId }, { $push: { projects: newProject.projectId } });
+      }
       return res.status(200).send({ message: 'New project created successfully', data });
     }
   } catch (error) {

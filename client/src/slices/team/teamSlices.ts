@@ -37,6 +37,7 @@ interface TeamState {
   details: ApiState<User>;
   delete: ApiState<User>;
   update: ApiState<User>;
+  projectsTeamList: ApiState<User[]>;
 }
 
 export const teamApi = {
@@ -90,6 +91,17 @@ export const teamApi = {
       return (response as { data: User }).data;
     }
   ),
+
+  projectTeamList: createAsyncThunk<User, string>(
+    "team/projectsTeamList",
+    async (projectId: string) => {
+      const response = await callApi(
+        `http://localhost:8000/team/projects/team/list/${projectId}`,
+        "get"
+      );
+      return (response as { data: User }).data;
+    }
+  ),
 };
 
 // Initial state
@@ -99,6 +111,7 @@ const initialState: TeamState = {
   details: { status: "idle", data: {} },
   update: { status: "idle", data: {} },
   delete: { status: "idle", data: {} },
+  projectsTeamList: { status: "idle", data: [] },
 };
 
 // Slice

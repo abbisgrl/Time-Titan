@@ -1,8 +1,15 @@
 import express from 'express';
-import { loginHandler } from '../handlers/authHandler';
+import { createTasks, deleteTasks, getTaskList, updateTasks } from '../handlers/taskHandler';
+import { protectRoute } from '../middlewares/authMiddlewave';
 
 const router = express.Router();
 
-router.get('/tasks', loginHandler);
+router.get('/list/:projectId', protectRoute, getTaskList);
+
+router.post('/create', protectRoute, createTasks);
+
+router.put('/update', protectRoute, updateTasks);
+
+router.delete('/delete', protectRoute, deleteTasks);
 
 export default router;
