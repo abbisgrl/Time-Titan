@@ -1,9 +1,8 @@
 import { Popover, Transition } from "@headlessui/react";
 import React, { Fragment } from "react";
-import { getInitials } from "../../misc";
+import { getInitials } from "../../../../misc";
 
 const UserInfo = ({ user }: { user: any }) => {
-  console.log({ user });
   return (
     <div className="px-4">
       <Popover className="relative">

@@ -16,6 +16,8 @@ interface userState {
     name?: string;
     email?: string;
     userId?: string;
+    isAdmin?: boolean;
+    isOwner?: boolean;
   };
 }
 

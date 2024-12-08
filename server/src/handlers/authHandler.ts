@@ -88,7 +88,7 @@ export const registerHandler = async (req: express.Request, res: express.Respons
 
 export const userDetails = async (req: UserRequest, res: express.Response) => {
   const { userId } = req?.user || {};
-  const userDetailsData = await User.findOne({ userId }, { name: 1, email: 1, userId: 1 });
+  const userDetailsData = await User.findOne({ userId }, { name: 1, email: 1, userId: 1, isOwner: 1, isAdmin: 1 });
   if (!userDetailsData) {
     res.status(401).json({ message: 'User Not Found' });
   } else {

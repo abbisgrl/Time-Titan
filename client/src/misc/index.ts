@@ -27,7 +27,7 @@ export const getInitials = (fullName: string) => {
   return initialsStr;
 };
 
-export const PRIOTITYSTYELS = {
+export const PRIORITY_STYLES = {
   high: "text-red-600",
   medium: "text-yellow-600",
   low: "text-blue-600",

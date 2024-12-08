@@ -27,12 +27,12 @@ const taskSchema = new Schema(
         by: { type: Schema.Types.ObjectId, ref: 'User' },
       },
     ],
-
     subTasks: [String],
     assets: [String],
     team: [String],
     projectId: { type: String, required: true },
     isTrashed: { type: Boolean, default: false },
+    taskId: { type: String, required: true },
   },
   { timestamps: true },
 );

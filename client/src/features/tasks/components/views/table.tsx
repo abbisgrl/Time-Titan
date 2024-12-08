@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { BiMessageAltDetail } from "react-icons/bi";
 import {
   MdAttachFile,
@@ -6,26 +5,21 @@ import {
   MdKeyboardArrowUp,
   MdKeyboardDoubleArrowUp,
 } from "react-icons/md";
-import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../../misc/index";
+import {
+  BGS,
+  PRIORITY_STYLES,
+  TASK_TYPE,
+  formatDate,
+} from "../../../../misc/index";
 import clsx from "clsx";
 import { FaList } from "react-icons/fa";
-import Button from "../../components/Button";
-import UserInfo from "./userInfo";
+import Button from "../../../../components/Button";
+import UserInfo from "../sharedComponents/userInfo";
+import { Task } from "../../../../slices/task/taskSlices";
+import { useState } from "react";
+import CreateTask from "../create/createTasks";
 
-// Define types for the task object and team members
-interface Task {
-  _id: string;
-  title: string;
-  stage: keyof typeof TASK_TYPE; // Assuming TASK_TYPE has defined stages
-  priority: keyof typeof PRIOTITYSTYELS;
-  date: string;
-  activities: any[];
-  assets: any[];
-  subTasks: any[];
-  team: { _id: string; name: string }[];
-}
-
-interface TableProps {
+export interface TableProps {
   tasks: Task[];
 }
 
@@ -36,6 +30,9 @@ const ICONS = {
 };
 
 const Table = ({ tasks }: TableProps) => {
+  const [openCreateTask, setOpenCreateTask] = useState(false);
+  const [taskId, setTaskId] = useState("");
+
   const deleteClicks = (taskId: string) => {
     console.log("Deleting task with ID:", taskId);
   };
@@ -69,17 +66,21 @@ const Table = ({ tasks }: TableProps) => {
       </td>
 
       <td className="py-3 px-3">
-        <div className="flex items-center gap-2">
-          <span className={clsx("text-lg", PRIOTITYSTYELS[task?.priority])}>
-            {ICONS[task?.priority]}
+        <div
+          className={`flex items-center gap-2 ${
+            PRIORITY_STYLES[task?.priority]
+          }`}
+        >
+          <span className={"text-lg"}>{ICONS[task?.priority]}</span>
+          <span className="font-semibold text-sm capitalize">
+            {task?.priority} Priority
           </span>
-          <span className="capitalize">{task?.priority} Priority</span>
         </div>
       </td>
 
       <td className="py-3 px-3">
         <span className="text-sm text-gray-600">
-          {formatDate(new Date(task?.date))}
+          {formatDate(new Date(task?.createdAt))}
         </span>
       </td>
 
@@ -95,16 +96,16 @@ const Table = ({ tasks }: TableProps) => {
           </div>
           <div className="flex items-center gap-1 text-gray-600">
             <FaList />
-            <span>0/{task?.subTasks?.length}</span>
+            <span>{task?.subTasks?.length}</span>
           </div>
         </div>
       </td>
 
       <td className="py-3 px-3">
         <div className="flex -space-x-2">
-          {task?.team?.map((m, index) => (
+          {task?.teamDetails?.map((m, index) => (
             <div
-              key={m._id}
+              key={m.userId}
               className={clsx(
                 "w-8 h-8 rounded-full text-white flex items-center justify-center text-sm",
                 BGS[index % BGS.length]
@@ -122,12 +123,16 @@ const Table = ({ tasks }: TableProps) => {
           className="text-blue-600 hover:text-blue-500 text-sm"
           label="Edit"
           type="button"
+          onClick={() => {
+            setTaskId(task?.taskId);
+            setOpenCreateTask(true);
+          }}
         />
         <Button
           className="text-red-700 hover:text-red-500 text-sm ml-3"
           label="Delete"
           type="button"
-          onClick={() => deleteClicks(task._id)}
+          onClick={() => deleteClicks(task.taskId)}
         />
       </td>
     </tr>
@@ -141,13 +146,11 @@ const Table = ({ tasks }: TableProps) => {
             <TableHeader />
             <tbody>
               {tasks.length ? (
-                tasks.map((task, index) => (
-                  <TableRow key={task._id} task={task} />
-                ))
+                tasks.map((task) => <TableRow key={task.taskId} task={task} />)
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan={6}
                     className="py-4 text-center text-gray-500 text-sm"
                   >
                     No tasks available.
@@ -158,6 +161,12 @@ const Table = ({ tasks }: TableProps) => {
           </table>
         </div>
       </div>
+      <CreateTask
+        open={openCreateTask}
+        setOpen={setOpenCreateTask}
+        taskId={taskId}
+        setTaskId={setTaskId}
+      />
     </>
   );
 };

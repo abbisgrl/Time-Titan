@@ -1,13 +1,44 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
+interface TeamMember {
+  _id: string;
+  name: string;
+  email: string;
+  userId: string;
+}
+
+export interface Task {
+  title: string;
+  dueDate: string;
+  description: string;
+  priority: "low" | "medium" | "high";
+  stage: "todo" | "in progress" | "completed";
+  subTasks: any[];
+  assets: any[];
+  projectId: string;
+  isTrashed: boolean;
+  taskId: string;
+  activities: any[];
+  createdAt: string;
+  updatedAt: string;
+  teamDetails: TeamMember[];
+}
+
 export interface TaskData {
   title: string;
   description: string;
   priority: string;
   stage: string;
-  subTasks: string[];
   team: { label?: string; value?: string };
+}
+
+export interface SubTaskData {
+  title: string;
+  description: string;
+  dueDate: Date;
+  tag: string;
+  taskId: string;
 }
 
 interface ApiState<T> {
@@ -17,7 +48,9 @@ interface ApiState<T> {
 
 interface TaskState {
   create: ApiState<any[]>;
-  list: ApiState<any[]>;
+  list: ApiState<{ taskData: Task[] }>;
+  subtask: ApiState<any[]>;
+  viewTask: ApiState<{ taskDetails: Task }>;
 }
 
 export const taskApi = {
@@ -42,12 +75,35 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
+  subTaskCreate: createAsyncThunk<any[], SubTaskData>(
+    "team/subtask",
+    async (subtaskData: SubTaskData) => {
+      const response = await callApi(
+        "http://localhost:8000/tasks/subtask/create",
+        "post",
+        subtaskData
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  viewTask: createAsyncThunk<any[], { taskId: string }>(
+    "team/viewTask",
+    async ({ taskId }: { taskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/view/${taskId}`,
+        "get"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
 };
 
 // Initial state
 const initialState: TaskState = {
   create: { status: "idle", data: [] },
-  list: { status: "idle", data: [] },
+  list: { status: "idle", data: { taskData: [] as Task[] } },
+  subtask: { status: "idle", data: [] },
+  viewTask: { status: "idle", data: { taskDetails: {} as Task } },
 };
 
 // Slice
