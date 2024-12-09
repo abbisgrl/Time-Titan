@@ -1,12 +1,33 @@
 import { Task } from "../../../../slices/task/taskSlices";
-import { TableProps } from "./table";
 import TaskCard from "../sharedComponents/taskCard";
 
-const BoardView = ({ tasks }: TableProps) => {
+const BoardView = ({ tasks, status }: { tasks: Task[]; status?: string }) => {
+  if (status) {
+    return (
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {tasks.map((task, index) => (
+          <TaskCard task={task} key={index} />
+        ))}
+      </div>
+    );
+  }
+
+  const categorizedTasks = {
+    todo: tasks.filter((task) => task.stage === "todo"),
+    inProgress: tasks.filter((task) => task.stage === "in progress"),
+    completed: tasks.filter((task) => task.stage === "completed"),
+  };
+
   return (
-    <div className="w-full py-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 2xl:gap-10">
-      {tasks?.map((task: Task, index: number) => (
-        <TaskCard task={task} key={index} />
+    <div className="w-full grid grid-cols-3 gap-6">
+      {Object.keys(categorizedTasks).map((category) => (
+        <div key={category} className="flex flex-col gap-4">
+          {categorizedTasks[category as keyof typeof categorizedTasks].map(
+            (task, index) => (
+              <TaskCard task={task} key={index} />
+            )
+          )}
+        </div>
       ))}
     </div>
   );

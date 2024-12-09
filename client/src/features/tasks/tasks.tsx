@@ -43,7 +43,10 @@ const Tasks = () => {
   useEffect(() => {
     if (currentProject.projectId) {
       dispatch(
-        taskApi.list({ projectId: currentProject.projectId, status: "" })
+        taskApi.list({
+          projectId: currentProject.projectId,
+          status: params?.status || "",
+        })
       );
     }
   }, [currentProject]);
@@ -82,7 +85,7 @@ const Tasks = () => {
 
         {/* Task Views */}
         {selected === 0 ? (
-          <BoardView tasks={tasks} />
+          <BoardView tasks={tasks} status={status} />
         ) : (
           <div className="w-full overflow-hidden bg-white rounded-lg shadow-sm">
             <Table tasks={tasks} />

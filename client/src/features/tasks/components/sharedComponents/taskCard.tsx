@@ -11,11 +11,12 @@ import { BGS, PRIORITY_STYLES, TASK_TYPE, formatDate } from "../../../../misc";
 import { BiMessageAltDetail } from "react-icons/bi";
 import { FaList } from "react-icons/fa";
 import UserInfo from "./userInfo";
-import { IoMdAdd } from "react-icons/io";
-// import AddSubTask from "./task/AddSubTask";
+import { IoMdAdd, IoMdSend } from "react-icons/io";
 import { RootState } from "../../../../store";
 import { Task } from "../../../../slices/task/taskSlices";
 import CreateSubTasks from "../create/createSubTasks";
+import { MdEdit, MdDelete } from "react-icons/md";
+import CreateTask from "../create/createTasks";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -29,10 +30,28 @@ const TaskCard = ({ task }: { task: Task }) => {
   );
 
   const [openCreateSubtask, setOpenCreateSubtask] = useState(false);
+  const [openCreateTask, setOpenCreateTask] = useState(false);
+  const [taskId, setTaskId] = useState("");
+  const [subTasksOpen, setSubTasksOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [newComment, setNewComment] = useState("");
+
+  const handleEditTask = () => {
+    setTaskId(task.taskId);
+    setOpenCreateTask(true);
+  };
+
+  const handleDeleteTask = () => {
+    console.log("Delete task:", task.taskId);
+  };
+
+  const handleAddComment = () => {
+    console.log("Add Comment:", newComment);
+    setNewComment("");
+  };
 
   return (
     <div className="w-full bg-white shadow-md p-4 rounded-lg">
-      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div
           className={clsx(
@@ -45,10 +64,21 @@ const TaskCard = ({ task }: { task: Task }) => {
             {task?.priority} Priority
           </span>
         </div>
-        {/* {user?.isAdmin && <TaskDialog task={task} />} */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleEditTask}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            <MdEdit size={20} />
+          </button>
+          <button
+            onClick={handleDeleteTask}
+            className="text-red-600 hover:text-red-800"
+          >
+            <MdDelete size={20} />
+          </button>
+        </div>
       </div>
-
-      {/* Title and Stage */}
       <div className="mb-2">
         <div className="flex items-center gap-2">
           <div
@@ -62,10 +92,7 @@ const TaskCard = ({ task }: { task: Task }) => {
           {formatDate(new Date(task?.createdAt))}
         </span>
       </div>
-
       <div className="border-t border-gray-200 my-3"></div>
-
-      {/* Info Section */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-4 text-gray-600">
           <div className="flex items-center gap-1 text-sm">
@@ -81,7 +108,6 @@ const TaskCard = ({ task }: { task: Task }) => {
             <span>{task?.subTasks?.length}</span>
           </div>
         </div>
-
         <div className="flex flex-row-reverse">
           {task?.teamDetails?.map((m, index) => (
             <div
@@ -97,30 +123,83 @@ const TaskCard = ({ task }: { task: Task }) => {
         </div>
       </div>
 
-      {/* Subtask Section */}
-      {task?.subTasks?.length > 0 ? (
-        <>
-          {task?.subTasks?.map((subTask) => (
-            <div className="py-4 border-t border-gray-200">
-              <h5 className="text-base font-semibold text-gray-800 truncate">
-                {subTask?.title}
-              </h5>
-              <div className="flex gap-4 text-sm text-gray-600">
-                <span>{formatDate(new Date(subTask?.createdAt))}</span>
-                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg">
-                  {subTask?.tag}
-                </span>
-              </div>
-            </div>
-          ))}
-        </>
-      ) : (
-        <div className="py-4 border-t border-gray-200 text-gray-500">
-          No Subtasks
-        </div>
-      )}
+      {/* Subtasks Section */}
+      <div>
+        <button
+          onClick={() => setSubTasksOpen(!subTasksOpen)}
+          className="text-blue-600 text-sm"
+        >
+          {subTasksOpen ? "Hide Subtasks" : "View Subtasks"}
+        </button>
+        {subTasksOpen && (
+          <div className="mt-2 max-h-32 overflow-y-auto space-y-2">
+            {task?.subTasks?.length > 0 ? (
+              task?.subTasks?.map((subTask, index) => (
+                <div
+                  key={index}
+                  className="p-2 bg-gray-100 rounded border border-gray-200"
+                >
+                  <h5 className="font-medium text-sm">{subTask?.title}</h5>
+                  <div className="text-gray-600 text-xs">
+                    <span>{formatDate(new Date(subTask?.createdAt))}</span>
+                    <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-1 rounded-lg">
+                      {subTask?.tag}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No Subtasks</p>
+            )}
+          </div>
+        )}
+      </div>
 
-      {/* Add Subtask */}
+      {/* Comments Section */}
+      <div className="mt-4">
+        <button
+          onClick={() => setCommentsOpen(!commentsOpen)}
+          className="text-blue-600 text-sm"
+        >
+          {commentsOpen ? "Hide Comments" : "View Comments"}
+        </button>
+        {commentsOpen && (
+          <div className="mt-2 space-y-2">
+            {task?.comments?.length > 0 ? (
+              task?.comments?.map((comment, index) => (
+                <div
+                  key={index}
+                  className="p-2 bg-gray-100 rounded border border-gray-200"
+                >
+                  <p className="text-sm text-gray-800">{comment?.text}</p>
+                  <div className="text-xs text-gray-600">
+                    {formatDate(new Date(comment?.createdAt))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No Comments</p>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment"
+                className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"
+              />
+              <button
+                onClick={handleAddComment}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <IoMdSend size={20} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Add Subtask Button */}
       <button
         onClick={() => setOpenCreateSubtask(true)}
         disabled={!(isAdmin || isOwner)}
@@ -130,10 +209,17 @@ const TaskCard = ({ task }: { task: Task }) => {
         Add Subtask
       </button>
 
+      {/* Modals */}
       <CreateSubTasks
         open={openCreateSubtask}
         setOpen={setOpenCreateSubtask}
         taskId={task.taskId}
+      />
+      <CreateTask
+        open={openCreateTask}
+        setOpen={setOpenCreateTask}
+        taskId={taskId}
+        setTaskId={setTaskId}
       />
     </div>
   );

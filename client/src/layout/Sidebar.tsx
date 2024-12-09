@@ -20,17 +20,17 @@ const linkData = [
   },
   {
     label: "Completed",
-    link: "/completed",
+    link: "/tasks/completed",
     icon: <MdTaskAlt />,
   },
   {
     label: "In Progress",
-    link: "/in-progress",
+    link: "/tasks/in-progress",
     icon: <MdOutlinePendingActions />,
   },
   {
     label: "To Do",
-    link: "/todo",
+    link: "/tasks/todo",
     icon: <MdOutlinePendingActions />,
   },
   {

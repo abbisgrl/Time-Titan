@@ -18,6 +18,7 @@ const RoutesComponent = () => {
           //   loader: teamLoader,
         },
         { path: "/tasks", element: <Tasks /> },
+        { path: "/tasks/:status", element: <Tasks /> },
         {
           path: "/teams",
           element: <TeamListing />,
