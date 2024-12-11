@@ -119,7 +119,6 @@ const TeamListing = () => {
                               const project = ProjectList().find(
                                 (p) => p.value === projectId
                               );
-                              console.log({ project });
                               return project ? (
                                 <li key={index} className="text-gray-700">
                                   {project.label}

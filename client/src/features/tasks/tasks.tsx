@@ -40,18 +40,18 @@ const Tasks = () => {
     (state: RootState) => state.navbarReducer.currentProject
   );
 
+  const status = params?.status || "";
+
   useEffect(() => {
     if (currentProject.projectId) {
       dispatch(
         taskApi.list({
           projectId: currentProject.projectId,
-          status: params?.status || "",
+          status,
         })
       );
     }
-  }, [currentProject]);
-
-  const status = params?.status || "";
+  }, [currentProject, status]);
 
   return loading ? (
     <div className="py-10">loading...</div>

@@ -42,7 +42,6 @@ export const uploadFileToS3 = async (
 
     const fileUrl = `https://${bucketName}.s3.us-east-1.amazonaws.com/${key}`;
 
-    console.log("File uploaded successfully:", fileUrl);
     return fileUrl;
   } catch (error) {
     console.error("Error uploading file:", error);

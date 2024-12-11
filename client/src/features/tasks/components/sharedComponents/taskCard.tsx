@@ -6,14 +6,14 @@ import {
   MdKeyboardArrowUp,
   MdKeyboardDoubleArrowUp,
 } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { BGS, PRIORITY_STYLES, TASK_TYPE, formatDate } from "../../../../misc";
 import { BiMessageAltDetail } from "react-icons/bi";
 import { FaList } from "react-icons/fa";
 import UserInfo from "./userInfo";
 import { IoMdAdd, IoMdSend } from "react-icons/io";
-import { RootState } from "../../../../store";
-import { Task } from "../../../../slices/task/taskSlices";
+import { AppDispatch, RootState } from "../../../../store";
+import { Task, taskApi } from "../../../../slices/task/taskSlices";
 import CreateSubTasks from "../create/createSubTasks";
 import { MdEdit, MdDelete } from "react-icons/md";
 import CreateTask from "../create/createTasks";
@@ -25,9 +25,10 @@ const ICONS = {
 };
 
 const TaskCard = ({ task }: { task: Task }) => {
-  const { isAdmin, isOwner } = useSelector(
+  const { isAdmin, isOwner, userId } = useSelector(
     (state: RootState) => state.userDetails?.data
   );
+  const dispatch = useDispatch<AppDispatch>();
 
   const [openCreateSubtask, setOpenCreateSubtask] = useState(false);
   const [openCreateTask, setOpenCreateTask] = useState(false);
@@ -42,11 +43,16 @@ const TaskCard = ({ task }: { task: Task }) => {
   };
 
   const handleDeleteTask = () => {
-    console.log("Delete task:", task.taskId);
+    dispatch(taskApi.deleteTask({ taskId: task.taskId }));
   };
 
   const handleAddComment = () => {
-    console.log("Add Comment:", newComment);
+    const comment = {
+      comment: newComment,
+      taskId: task.taskId,
+      userId,
+    };
+    dispatch(taskApi.addComment(comment));
     setNewComment("");
   };
 
@@ -97,7 +103,7 @@ const TaskCard = ({ task }: { task: Task }) => {
         <div className="flex gap-4 text-gray-600">
           <div className="flex items-center gap-1 text-sm">
             <BiMessageAltDetail />
-            <span>{task?.activities?.length}</span>
+            <span>{task?.comments?.length}</span>
           </div>
           <div className="flex items-center gap-1 text-sm">
             <MdAttachFile />
@@ -166,14 +172,14 @@ const TaskCard = ({ task }: { task: Task }) => {
         {commentsOpen && (
           <div className="mt-2 space-y-2">
             {task?.comments?.length > 0 ? (
-              task?.comments?.map((comment, index) => (
+              task?.comments?.map((item, index) => (
                 <div
                   key={index}
                   className="p-2 bg-gray-100 rounded border border-gray-200"
                 >
-                  <p className="text-sm text-gray-800">{comment?.text}</p>
+                  <p className="text-sm text-gray-800">{item?.comment}</p>
                   <div className="text-xs text-gray-600">
-                    {formatDate(new Date(comment?.createdAt))}
+                    {formatDate(new Date(item?.createdAt))}
                   </div>
                 </div>
               ))

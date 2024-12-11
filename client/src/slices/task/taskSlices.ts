@@ -13,7 +13,8 @@ export interface Task {
   dueDate: string;
   description: string;
   priority: "low" | "medium" | "high";
-  stage: "todo" | "in progress" | "completed";
+  stage: "todo" | "in-progress" | "completed";
+  comments: any[];
   subTasks: any[];
   assets: any[];
   projectId: string;
@@ -31,6 +32,7 @@ export interface TaskData {
   priority: string;
   stage: string;
   team: { label?: string; value?: string };
+  taskId?: string;
 }
 
 export interface SubTaskData {
@@ -41,6 +43,12 @@ export interface SubTaskData {
   taskId: string;
 }
 
+export interface CommentData {
+  userId?: string;
+  taskId: string;
+  comment: string;
+}
+
 interface ApiState<T> {
   status: "idle" | "pending" | "success" | "failed";
   data: T;
@@ -48,9 +56,12 @@ interface ApiState<T> {
 
 interface TaskState {
   create: ApiState<any[]>;
+  updateTask: ApiState<any[]>;
   list: ApiState<{ taskData: Task[] }>;
-  subtask: ApiState<any[]>;
+  deleteTask: ApiState<any[]>;
   viewTask: ApiState<{ taskDetails: Task }>;
+  subtask: ApiState<any[]>;
+  addComment: ApiState<any[]>;
 }
 
 export const taskApi = {
@@ -75,6 +86,37 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
+  viewTask: createAsyncThunk<any[], { taskId: string }>(
+    "team/viewTask",
+    async ({ taskId }: { taskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/view/${taskId}`,
+        "get"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  updateTask: createAsyncThunk<any[], TaskData>(
+    "team/updateTask",
+    async (taskData: TaskData) => {
+      const response = await callApi(
+        "http://localhost:8000/tasks/update",
+        "post",
+        taskData
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  deleteTask: createAsyncThunk<any[], { taskId: string }>(
+    "team/deleteTask",
+    async ({ taskId }: { taskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/delete/${taskId}`,
+        "delete"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
   subTaskCreate: createAsyncThunk<any[], SubTaskData>(
     "team/subtask",
     async (subtaskData: SubTaskData) => {
@@ -86,12 +128,13 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
-  viewTask: createAsyncThunk<any[], { taskId: string }>(
-    "team/viewTask",
-    async ({ taskId }: { taskId: string }) => {
+  addComment: createAsyncThunk<any[], CommentData>(
+    "team/addComment",
+    async (commentData: CommentData) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/view/${taskId}`,
-        "get"
+        `http://localhost:8000/tasks/add/comment`,
+        "post",
+        commentData
       );
       return (response as { data: any[] }).data;
     }
@@ -101,9 +144,12 @@ export const taskApi = {
 // Initial state
 const initialState: TaskState = {
   create: { status: "idle", data: [] },
+  updateTask: { status: "idle", data: [] },
   list: { status: "idle", data: { taskData: [] as Task[] } },
-  subtask: { status: "idle", data: [] },
+  deleteTask: { status: "idle", data: [] },
   viewTask: { status: "idle", data: { taskDetails: {} as Task } },
+  subtask: { status: "idle", data: [] },
+  addComment: { status: "idle", data: [] },
 };
 
 // Slice

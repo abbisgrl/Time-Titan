@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   MdDashboard,
   MdOutlinePendingActions,
@@ -87,15 +88,15 @@ const Sidebar = () => {
         <ul className="flex flex-col py-4">
           {linkData.map((item, index) => (
             <li key={index}>
-              <a
-                href={item.link}
+              <Link
+                to={item.link} // Replace `href` with `to`
                 className="flex items-center h-12 px-3 hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition"
               >
                 <span className="text-xl">{item.icon}</span>
                 {!isCollapsed && (
                   <span className="ml-3 text-sm font-medium">{item.label}</span>
                 )}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

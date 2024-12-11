@@ -5,7 +5,7 @@ const BoardView = ({ tasks, status }: { tasks: Task[]; status?: string }) => {
   if (status) {
     return (
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {tasks.map((task, index) => (
+        {tasks?.map((task, index) => (
           <TaskCard task={task} key={index} />
         ))}
       </div>
@@ -14,7 +14,7 @@ const BoardView = ({ tasks, status }: { tasks: Task[]; status?: string }) => {
 
   const categorizedTasks = {
     todo: tasks.filter((task) => task.stage === "todo"),
-    inProgress: tasks.filter((task) => task.stage === "in progress"),
+    inProgress: tasks.filter((task) => task.stage === "in-progress"),
     completed: tasks.filter((task) => task.stage === "completed"),
   };
 

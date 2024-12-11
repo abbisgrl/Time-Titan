@@ -27,7 +27,6 @@ const CreateTask = ({
   taskId?: string;
   setTaskId?: (taskId: string) => void;
 }) => {
-  console.log(taskId, "taskId");
   const dispatch = useDispatch<AppDispatch>();
 
   const projectTeamList = useSelector(
@@ -99,8 +98,11 @@ const CreateTask = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const taskData = { ...formData, projectId: currentProject?.projectId };
-    console.log({ taskData });
-    dispatch(taskApi.create(taskData));
+    if (taskId) {
+      dispatch(taskApi.updateTask({ ...taskData, taskId }));
+    } else {
+      dispatch(taskApi.create(taskData));
+    }
     setOpen(false);
   };
 
@@ -183,7 +185,7 @@ const CreateTask = ({
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="todo">To Do</option>
-            <option value="in progress">In Progress</option>
+            <option value="in-progress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
         </div>

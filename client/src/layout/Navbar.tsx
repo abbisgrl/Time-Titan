@@ -27,7 +27,7 @@ const Navbar = () => {
       setProjectList(projectListReducer.data);
       setSelectedProduct(projectListReducer.data[0] || null);
     }
-  }, [projectListReducer]);
+  }, [projectListReducer.status]);
 
   useEffect(() => {
     if (Object.keys(selectedProduct || {}).length) {

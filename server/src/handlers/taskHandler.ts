@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { validateRequiredFields } from '../helpers/validators';
 import Task from '../models/task';
 import SubTask from '../models/subTask';
+import Comment from '../models/comments';
 
 export const getTaskList = async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
@@ -14,7 +15,7 @@ export const getTaskList = async (req: express.Request, res: express.Response) =
 
   const condition: any = { projectId };
 
-  if (status === 'todo' || status === 'in progress' || status === 'completed') {
+  if (status === 'todo' || status === 'in-progress' || status === 'completed') {
     condition.stage = status;
   }
 
@@ -36,6 +37,14 @@ export const getTaskList = async (req: express.Request, res: express.Response) =
           localField: 'subTasks',
           foreignField: 'subTaskId',
           as: 'subTasks',
+        },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: 'comments',
+          foreignField: 'commentId',
+          as: 'comments',
         },
       },
       {
@@ -79,7 +88,7 @@ export const createTasks = async (req: express.Request, res: express.Response) =
     };
     console.dir({ taskObject }, { depth: null });
 
-    const response = await Task.create(taskObject);
+    const response = await Task.updateOne();
     console.dir({ response }, { depth: null });
     return res.status(200).send({ message: 'New task created successfully', response });
   } catch (error) {
@@ -93,7 +102,7 @@ export const createSubTask = async (req: express.Request, res: express.Response)
     [
       { name: 'title', value: title, message: 'Title is required.' },
       { name: 'date', value: dueDate, message: 'Date is required.' },
-      { name: 'taskId', value: dueDate, message: 'Task details is missing' },
+      { name: 'taskId', value: taskId, message: 'Task details is missing' },
     ],
     res,
   );
@@ -136,6 +145,88 @@ export const viewTask = async (req: express.Request, res: express.Response) => {
   }
 };
 
-export const deleteTasks = () => {};
+export const deleteTasks = async (req: express.Request, res: express.Response) => {
+  const { taskId } = req.params || {};
+  const taskDetails = await Task.aggregate([
+    {
+      $match: { taskId },
+    },
+  ]);
+  try {
+    if (!taskDetails) {
+      return res.status(401).send({ message: 'Task does not exists' });
+    } else {
+      const commentsArray = taskDetails[0].comments;
+      const subTasksArray = taskDetails[0].subTasks;
+      await Task.deleteOne({ taskId });
+      if (commentsArray?.length) {
+        await Comment.deleteMany({ commentId: { $in: commentsArray } });
+      }
+      if (subTasksArray?.length) {
+        await SubTask.deleteMany({ subTaskId: { $in: subTasksArray } });
+      }
+      return res.status(200).send({ message: 'Task deleted successfully' });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-export const updateTasks = () => {};
+export const updateTasks = async (req: express.Request, res: express.Response) => {
+  const { title, description, dueDate, priority, stage, assets, team, taskId } = req.body || {};
+  const validationError = validateRequiredFields(
+    [
+      { name: 'title', value: title, message: 'Title is required.' },
+      { name: 'date', value: dueDate, message: 'Date is required.' },
+      { name: 'projectId', value: dueDate, message: 'Project details is missing' },
+      { name: 'taskId', value: taskId, message: 'Task details is missing' },
+    ],
+    res,
+  );
+
+  if (validationError) return;
+  try {
+    const taskObject = {
+      title,
+      description,
+      priority: priority || 'normal',
+      stage: stage || 'todo',
+      assets,
+      dueDate,
+      team: [team.value],
+    };
+    const response = await Task.updateOne({ taskId }, { $set: taskObject });
+    return res.status(200).send({ message: 'Task updated successfully', response });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const addComment = async (req: express.Request, res: express.Response) => {
+  const { userId, taskId, comment } = req.body || {};
+  const validationError = validateRequiredFields(
+    [
+      { name: 'content', value: comment, message: 'comment is required.' },
+      { name: 'userId', value: userId, message: 'User is required.' },
+      { name: 'taskId', value: taskId, message: 'Task details is missing' },
+    ],
+    res,
+  );
+
+  if (validationError) return;
+  const commentId = uuidv4();
+  try {
+    const commentObject = {
+      userId,
+      taskId,
+      comment,
+      commentId,
+    };
+
+    const response = await Comment.create(commentObject);
+    await Task.updateOne({ taskId }, { $push: { comments: commentId } });
+    return res.status(200).send({ message: 'Comment added successfully', response });
+  } catch (error) {
+    console.log(error);
+  }
+};
