@@ -186,6 +186,8 @@ const CreateTask = ({
           >
             <option value="todo">To Do</option>
             <option value="in-progress">In Progress</option>
+            <option value="qa-testing">Ready For QA Testing</option>
+            <option value="pm-testing">Ready For PM Testing</option>
             <option value="completed">Completed</option>
           </select>
         </div>

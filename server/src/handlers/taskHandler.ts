@@ -5,21 +5,21 @@ import Task from '../models/task';
 import SubTask from '../models/subTask';
 import Comment from '../models/comments';
 
+type Status = 'todo' | 'in-progress' | 'qa-testing' | 'pm-testing' | 'completed';
+
 export const getTaskList = async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
   const { status } = req.query;
+
   const validationError = validateRequiredFields([{ name: 'projectId', value: projectId, message: 'Project details is missing' }], res);
   if (validationError) return;
 
-  console.dir({ projectId, status }, { depth: null });
-
   const condition: any = { projectId };
 
-  if (status === 'todo' || status === 'in-progress' || status === 'completed') {
+  if (status && ['todo', 'in-progress', 'qa-testing', 'pm-testing', 'completed'].includes(status as Status)) {
     condition.stage = status;
   }
 
-  console.dir({ condition }, { depth: null });
   try {
     const taskData = await Task.aggregate([
       { $match: condition },
@@ -86,9 +86,8 @@ export const createTasks = async (req: express.Request, res: express.Response) =
       team: [team.value],
       taskId: uuidv4(),
     };
-    console.dir({ taskObject }, { depth: null });
 
-    const response = await Task.updateOne();
+    const response = await Task.create(taskObject);
     console.dir({ response }, { depth: null });
     return res.status(200).send({ message: 'New task created successfully', response });
   } catch (error) {
@@ -118,11 +117,9 @@ export const createSubTask = async (req: express.Request, res: express.Response)
       subTaskId,
       tag,
     };
-    console.dir({ subTaskObject }, { depth: null });
 
     const response = await SubTask.create(subTaskObject);
     await Task.updateOne({ taskId }, { $push: { subTasks: subTaskId } });
-    console.dir({ response }, { depth: null });
     return res.status(200).send({ message: 'New sub task created successfully', response });
   } catch (error) {
     console.log(error);

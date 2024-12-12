@@ -13,7 +13,7 @@ export interface Task {
   dueDate: string;
   description: string;
   priority: "low" | "medium" | "high";
-  stage: "todo" | "in-progress" | "completed";
+  stage: "todo" | "in-progress" | "qa-testing" | "pm-testing" | "completed";
   comments: any[];
   subTasks: any[];
   assets: any[];

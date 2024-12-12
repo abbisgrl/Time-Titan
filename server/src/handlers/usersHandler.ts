@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { validateRequiredFields } from '../helpers/validators';
 import { UserRequest } from '../middlewares/authMiddlewave';
+// import Project from '../models/project';
 
 export const getTeamList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
@@ -45,7 +46,6 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
-      console.dir({ projects }, { depth: null });
       const newUser = {
         name,
         email,
@@ -58,6 +58,7 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
         ownerId,
       };
       await User.create(newUser);
+      // await Project.
       return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {
@@ -94,7 +95,6 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
   if (!usersDetails) {
     return res.status(401).send({ message: 'User does not exists' });
   } else {
-    console.dir({ body: req.body, data }, { depth: null });
     await User.updateOne({ userId }, { $set: data });
     return res.status(200).send({ message: 'User Updated successfully' });
   }

@@ -5,18 +5,22 @@ import { AppDispatch, RootState } from "../../store";
 import Title from "../../components/title";
 import AddTeamMember from "./addTeamMember";
 import { roleMap } from "../../misc";
+import TeamListingLoader from "./teamListingLoader";
+import NoRecordsFound from "../../components/NoRecordsFound";
 
 const TeamListing = () => {
   const [openAddModal, setIsOpenAddModal] = useState(false);
   const [teamEditId, setTeamEditId] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
-  const teamList = useSelector(
-    (state: RootState) => state.teamReducer.list?.data
+  const teamListReducer = useSelector(
+    (state: RootState) => state.teamReducer.list
   );
   const projectData = useSelector(
     (state: RootState) => state.projectReducer.list
   );
+
+  const teamList = teamListReducer?.data;
 
   const ProjectList = useCallback(() => {
     return projectData?.data?.map((project) => ({
@@ -50,21 +54,10 @@ const TeamListing = () => {
     dispatch(teamApi.delete(id));
   };
 
-  return (
-    <div className="container mx-auto p-4 max-w-screen-lg">
-      <div className="flex items-center justify-between mb-8">
-        <Title title="Team Members" className="" />
-        <button
-          className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-          onClick={() => setIsOpenAddModal(true)} // Add your handler function here
-        >
-          Add Member
-        </button>
-      </div>
-
-      {teamList?.length ? (
+  const getTeamList = () => {
+    if (teamList?.length) {
+      return (
         <>
-          {" "}
           {/* Desktop View */}
           <div className="hidden md:block">
             <div className="grid grid-cols-12 bg-gray-100 rounded-t-lg shadow-md font-semibold text-sm text-gray-600 sticky top-[-16px] z-10">
@@ -115,7 +108,6 @@ const TeamListing = () => {
                         <ul className="text-sm">
                           {user.projects?.map(
                             (projectId: string, index: number) => {
-                              // Find the project by its ID from createProjectData
                               const project = ProjectList().find(
                                 (p) => p.value === projectId
                               );
@@ -210,8 +202,31 @@ const TeamListing = () => {
             })}
           </div>
         </>
+      );
+    }
+    return (
+      <NoRecordsFound
+        buttonLabel="Add Member"
+        onButtonClick={setIsOpenAddModal}
+      />
+    );
+  };
+  return (
+    <div className="container mx-auto p-4 max-w-screen-lg">
+      <div className="flex items-center justify-between mb-8">
+        <Title title="Team Members" className="" />
+        <button
+          className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
+          onClick={() => setIsOpenAddModal(true)}
+        >
+          Add Member
+        </button>
+      </div>
+
+      {["idle", "pending"].includes(teamListReducer?.status) ? (
+        <TeamListingLoader />
       ) : (
-        <h1>No Record Founds</h1>
+        getTeamList()
       )}
 
       {/* Add team modal */}

@@ -26,17 +26,19 @@ export const getInitials = (fullName: string) => {
 
   return initialsStr;
 };
-
 export const PRIORITY_STYLES = {
   high: "text-red-600",
   medium: "text-yellow-600",
   low: "text-blue-600",
+  normal: "text-gray-600",
 };
 
 export const TASK_TYPE = {
   todo: "bg-blue-600",
   "in-progress": "bg-yellow-600",
   completed: "bg-green-600",
+  "qa-testing": "bg-sky-600",
+  "pm-testing": "bg-purple-600",
 };
 
 export const BGS = [
