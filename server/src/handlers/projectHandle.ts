@@ -7,6 +7,7 @@ import User from '../models/user';
 
 export const getProjectsList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
+  console.dir({ userId }, { depth: null });
   try {
     const projectsList = await Project.aggregate([
       {

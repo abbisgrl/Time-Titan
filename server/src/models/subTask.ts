@@ -8,6 +8,7 @@ const subTasksSchema = new Schema(
     taskId: { type: String, required: true },
     subTaskId: { type: String, required: true },
     tag: { type: String, required: true },
+    status: { type: String, required: true },
   },
   { timestamps: true },
 );

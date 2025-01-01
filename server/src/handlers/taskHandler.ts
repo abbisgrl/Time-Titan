@@ -95,43 +95,79 @@ export const createTasks = async (req: express.Request, res: express.Response) =
   }
 };
 
-export const createSubTask = async (req: express.Request, res: express.Response) => {
-  const { title, description, dueDate, taskId, tag } = req.body || {};
-  const validationError = validateRequiredFields(
-    [
-      { name: 'title', value: title, message: 'Title is required.' },
-      { name: 'date', value: dueDate, message: 'Date is required.' },
-      { name: 'taskId', value: taskId, message: 'Task details is missing' },
-    ],
-    res,
-  );
-
-  if (validationError) return;
-  const subTaskId = uuidv4();
-  try {
-    const subTaskObject = {
-      title,
-      description,
-      taskId,
-      dueDate,
-      subTaskId,
-      tag,
-    };
-
-    const response = await SubTask.create(subTaskObject);
-    await Task.updateOne({ taskId }, { $push: { subTasks: subTaskId } });
-    return res.status(200).send({ message: 'New sub task created successfully', response });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 export const viewTask = async (req: express.Request, res: express.Response) => {
   const { taskId } = req.params || {};
 
   const taskDetails = await Task.aggregate([
     {
-      $match: { taskId },
+      $match: { taskId }, // Match the specific task by ID
+    },
+    {
+      $lookup: {
+        from: 'subtasks',
+        localField: 'subTasks',
+        foreignField: 'subTaskId',
+        as: 'subTasks', // Retrieve subtasks
+      },
+    },
+    {
+      $lookup: {
+        from: 'comments',
+        localField: 'comments',
+        foreignField: 'commentId',
+        as: 'comments', // Retrieve comments
+      },
+    },
+    {
+      $unwind: {
+        path: '$comments',
+        preserveNullAndEmptyArrays: true, // Unwind comments but keep null arrays
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'comments.userId',
+        foreignField: 'userId',
+        as: 'userDetails', // Get user details for each comment
+      },
+    },
+    {
+      $addFields: {
+        'comments.userName': {
+          $cond: {
+            if: { $gt: [{ $size: '$userDetails' }, 0] },
+            then: { $arrayElemAt: ['$userDetails.name', 0] }, // Extract user name
+            else: null,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        'comments.userDetails': 0, // Remove the userDetails field from comments
+      },
+    },
+    {
+      $group: {
+        _id: '$_id', // Group by task ID
+        task: { $first: '$$ROOT' },
+        comments: { $push: '$comments' }, // Recreate the comments array
+      },
+    },
+    {
+      $addFields: {
+        'task.comments': {
+          $filter: {
+            input: '$comments',
+            as: 'comment',
+            cond: { $ne: ['$$comment.userName', null] }, // Remove invalid comments
+          },
+        },
+      },
+    },
+    {
+      $replaceRoot: { newRoot: '$task' }, // Replace root with the task object
     },
   ]);
 
@@ -182,6 +218,8 @@ export const updateTasks = async (req: express.Request, res: express.Response) =
   );
 
   if (validationError) return;
+  const isTeamVariableIsArray = Array.isArray(team);
+  console.dir({ isTeamVariableIsArray, team }, { depth: null });
   try {
     const taskObject = {
       title,
@@ -190,12 +228,110 @@ export const updateTasks = async (req: express.Request, res: express.Response) =
       stage: stage || 'todo',
       assets,
       dueDate,
-      team: [team.value],
+      team: isTeamVariableIsArray ? team : [team.value],
     };
     const response = await Task.updateOne({ taskId }, { $set: taskObject });
     return res.status(200).send({ message: 'Task updated successfully', response });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const createSubTask = async (req: express.Request, res: express.Response) => {
+  const { title, description, dueDate, taskId, tag, status } = req.body || {};
+  const validationError = validateRequiredFields(
+    [
+      { name: 'title', value: title, message: 'Title is required.' },
+      { name: 'date', value: dueDate, message: 'Date is required.' },
+      { name: 'taskId', value: taskId, message: 'Task details is missing' },
+    ],
+    res,
+  );
+
+  if (validationError) return;
+  const subTaskId = uuidv4();
+  try {
+    const subTaskObject = {
+      title,
+      description,
+      taskId,
+      dueDate,
+      subTaskId,
+      tag,
+      status: status || 'todo',
+    };
+
+    const response = await SubTask.create(subTaskObject);
+    await Task.updateOne({ taskId }, { $push: { subTasks: subTaskId } });
+    return res.status(200).send({ message: 'New sub task created successfully', response });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateSubTask = async (req: express.Request, res: express.Response) => {
+  const { title, description, dueDate, taskId, tag, status, subTaskId } = req.body || {};
+  const validationError = validateRequiredFields(
+    [
+      { name: 'title', value: title, message: 'Title is required.' },
+      { name: 'date', value: dueDate, message: 'Date is required.' },
+      { name: 'taskId', value: taskId, message: 'Task details is missing' },
+    ],
+    res,
+  );
+
+  if (validationError) return;
+  try {
+    const subTaskObject = {
+      title,
+      description,
+      taskId,
+      dueDate,
+      tag,
+      status,
+    };
+
+    const response = await SubTask.updateOne({ subTaskId }, subTaskObject);
+    return res.status(200).send({ message: 'New sub task updated successfully', response });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteSubTask = async (req: express.Request, res: express.Response) => {
+  const { subTaskId } = req.params || {};
+  const subTaskDetails = await SubTask.aggregate([
+    {
+      $match: { subTaskId },
+    },
+  ]);
+  try {
+    if (!subTaskDetails) {
+      return res.status(401).send({ message: 'Sub task does not exists' });
+    } else {
+      const taskId = subTaskDetails[0].taskId;
+      await SubTask.deleteOne({ subTaskId });
+      await Task.updateOne({ taskId }, { $pull: { subTasks: { id: subTaskId } } });
+      return res.status(200).send({ message: 'Sub task deleted successfully' });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const viewSubTask = async (req: express.Request, res: express.Response) => {
+  const { subTaskId } = req.params || {};
+
+  const subTaskDetails = await SubTask.aggregate([
+    {
+      $match: { subTaskId },
+    },
+  ]);
+
+  if (!subTaskDetails) {
+    return res.status(401).send({ message: 'Sub task does not exists' });
+  } else {
+    return res.status(200).send({ message: 'Sub task details successfully displayed', subTaskDetails: subTaskDetails[0] });
   }
 };
 

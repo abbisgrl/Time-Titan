@@ -113,7 +113,6 @@ const AddTeamMember = ({
       projects: projectIds,
       ownerId: ownerDetails?.data?.userId!,
     };
-    console.log({ teamData });
     if (teamId) {
       dispatch(teamApi.update({ teamData, userId: teamId }));
     } else {

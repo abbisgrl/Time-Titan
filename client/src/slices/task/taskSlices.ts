@@ -41,6 +41,8 @@ export interface SubTaskData {
   dueDate: Date;
   tag: string;
   taskId: string;
+  status: string;
+  subTaskId: string;
 }
 
 export interface CommentData {
@@ -62,6 +64,9 @@ interface TaskState {
   viewTask: ApiState<{ taskDetails: Task }>;
   subtask: ApiState<any[]>;
   addComment: ApiState<any[]>;
+  subtaskUpdate: ApiState<any[]>;
+  subTaskView: ApiState<{ subTaskDetails: SubTaskData }>;
+  subTaskDelete: ApiState<any[]>;
 }
 
 export const taskApi = {
@@ -117,13 +122,44 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
-  subTaskCreate: createAsyncThunk<any[], SubTaskData>(
+  subTaskCreate: createAsyncThunk<any[], Partial<SubTaskData>>(
     "team/subtask",
-    async (subtaskData: SubTaskData) => {
+    async (subtaskData: Partial<SubTaskData>) => {
       const response = await callApi(
         "http://localhost:8000/tasks/subtask/create",
         "post",
         subtaskData
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  subTaskUpdate: createAsyncThunk<any[], any>(
+    "team/subtaskUpdate",
+    async (subtaskData: any) => {
+      const response = await callApi(
+        "http://localhost:8000/tasks/subtask/update",
+        "post",
+        subtaskData
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  subTaskView: createAsyncThunk<any[], { subTaskId: string }>(
+    "team/subTaskView",
+    async ({ subTaskId }: { subTaskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/subtask/view/${subTaskId}`,
+        "get"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  subTaskDelete: createAsyncThunk<any[], { subTaskId: string }>(
+    "team/subTaskDelete",
+    async ({ subTaskId }: { subTaskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/subtask/delete/${subTaskId}`,
+        "delete"
       );
       return (response as { data: any[] }).data;
     }
@@ -150,6 +186,9 @@ const initialState: TaskState = {
   viewTask: { status: "idle", data: { taskDetails: {} as Task } },
   subtask: { status: "idle", data: [] },
   addComment: { status: "idle", data: [] },
+  subtaskUpdate: { status: "idle", data: [] },
+  subTaskView: { status: "idle", data: { subTaskDetails: {} as SubTaskData } },
+  subTaskDelete: { status: "idle", data: [] },
 };
 
 // Slice

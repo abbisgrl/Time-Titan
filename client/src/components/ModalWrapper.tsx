@@ -7,16 +7,27 @@ const ModalWrapper = ({
   open,
   setOpen,
   children,
+  minWidth = "900px",
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   children: React.ReactNode;
+  minWidth?: string;
 }) => {
   return (
     <Modal
       isOpen={open}
       overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
-      className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto p-6"
+      className="relative bg-white rounded-lg shadow-xl w-full mx-auto p-6"
+      style={{
+        content: {
+          width: "auto",
+          maxWidth: "1000px",
+          margin: "0 auto",
+          inset: "auto",
+          minWidth,
+        },
+      }}
     >
       <button
         onClick={() => setOpen(false)}

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import User from '../models/user';
 import { validateRequiredFields } from '../helpers/validators';
 import { UserRequest } from '../middlewares/authMiddlewave';
+import Project from '../models/project';
 // import Project from '../models/project';
 
 export const getTeamList = async (req: UserRequest, res: express.Response) => {
@@ -58,7 +59,23 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
         ownerId,
       };
       await User.create(newUser);
-      // await Project.
+
+      const updatePromises = projects.map((projectId: string) => Project.updateOne({ projectId }, { $push: { members: newUser.userId } }));
+      Promise.all(updatePromises)
+        .then((results) => {
+          console.log(
+            'All Projects updated:',
+            results.map((res) => ({
+              matchedCount: res.matchedCount,
+              modifiedCount: res.modifiedCount,
+              acknowledged: res.acknowledged,
+            })),
+          );
+        })
+        .catch((err) => {
+          console.error('Error during updates:', err);
+        });
+
       return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {

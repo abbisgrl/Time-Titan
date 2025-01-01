@@ -3,6 +3,7 @@ import { loginReducer, userDetailsReducer } from "../slices/auth/authSlices";
 import { teamReducer } from "../slices/team/teamSlices";
 import { projectReducer } from "../slices/project/projectSlices";
 import { taskReducer } from "../slices/task/taskSlices";
+import { dashboardReducer } from "../slices/dashboard/dashboardSlice";
 import navbarReducer from "../slices/layout/navbar";
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     userDetails: userDetailsReducer,
     taskReducer,
     navbarReducer,
+    dashboardReducer,
   },
 });
 

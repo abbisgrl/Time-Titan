@@ -1,5 +1,16 @@
 import express from 'express';
-import { addComment, createSubTask, createTasks, deleteTasks, getTaskList, updateTasks, viewTask } from '../handlers/taskHandler';
+import {
+  addComment,
+  createSubTask,
+  createTasks,
+  deleteSubTask,
+  deleteTasks,
+  getTaskList,
+  updateSubTask,
+  updateTasks,
+  viewSubTask,
+  viewTask,
+} from '../handlers/taskHandler';
 import { protectRoute } from '../middlewares/authMiddlewave';
 
 const router = express.Router();
@@ -15,6 +26,12 @@ router.delete('/delete/:taskId', protectRoute, deleteTasks);
 router.get('/view/:taskId', protectRoute, viewTask);
 
 router.post('/subtask/create', protectRoute, createSubTask);
+
+router.post('/subtask/update', protectRoute, updateSubTask);
+
+router.delete('/subtask/delete/:subTaskId', protectRoute, deleteSubTask);
+
+router.get('/subtask/view/:subTaskId', protectRoute, viewSubTask);
 
 router.post('/add/comment', protectRoute, addComment);
 

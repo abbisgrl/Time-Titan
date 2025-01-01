@@ -1,22 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FormInput from "../../../../components/FormInput";
 import ModalWrapper from "../../../../components/ModalWrapper";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../../store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../../store";
 import { SubTaskData, taskApi } from "../../../../slices/task/taskSlices";
 
 const CreateSubTasks = ({
   open,
   setOpen,
   taskId,
+  subTaskId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   taskId: string;
+  subTaskId?: string;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const { subTaskDetails } = useSelector(
+    (state: RootState) => state.taskReducer?.subTaskView?.data
+  );
 
   const [formData, setFormData] = useState({
     title: "",
@@ -25,19 +30,36 @@ const CreateSubTasks = ({
     tag: "",
   });
 
+  useEffect(() => {
+    if (subTaskId) {
+      dispatch(taskApi.subTaskView({ subTaskId }));
+    }
+  }, [subTaskId]);
+
+  useEffect(() => {
+    if (Object.keys(subTaskDetails).length) {
+      const { title, description, dueDate, tag } = subTaskDetails;
+      setFormData({ title, description, dueDate, tag });
+    }
+  }, [subTaskDetails]);
+
   const handleChange = (name: string, value: any) => {
     setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const subTaskData: SubTaskData = { ...formData, taskId };
-    dispatch(taskApi.subTaskCreate(subTaskData));
+    const subTaskData: Partial<SubTaskData> = { ...formData, taskId };
+    if (subTaskId) {
+      dispatch(taskApi.subTaskUpdate({ ...subTaskData, subTaskId }));
+    } else {
+      dispatch(taskApi.subTaskCreate(subTaskData));
+    }
     setOpen(false);
   };
 
   return (
-    <ModalWrapper open={open} setOpen={setOpen}>
+    <ModalWrapper open={open} setOpen={setOpen} minWidth="500px">
       <form onSubmit={handleSubmit} className="space-y-4">
         <h2 className="text-xl font-bold mb-4">Create Subtask</h2>
 
@@ -100,7 +122,7 @@ const CreateSubTasks = ({
           type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-          Create Subtask
+          {subTaskId ? "Update Subtask" : "Create Subtask"}
         </button>
       </form>
     </ModalWrapper>
