@@ -61,49 +61,30 @@ const Tasks = () => {
   const searchTextReducerPrev = usePrevious(searchTextReducer);
 
   useDidMountEffect(() => {
-    if (currentProject.projectId) {
-      dispatch(
-        taskApi.list({
-          projectId: currentProject.projectId,
-          status,
-          isTrashed: false,
-        })
-      );
-    }
+    fetchTaskList();
   }, [currentProject, status]);
 
   useEffect(() => {
     if (openAddTaskPrev && openAddTaskPrev !== openAddTask && !openAddTask) {
       const timer = setTimeout(() => {
-        if (currentProject.projectId) {
-          dispatch(
-            taskApi.list({
-              projectId: currentProject.projectId,
-              status,
-              isTrashed: false,
-            })
-          );
-        }
+        fetchTaskList();
       }, 500);
-
       return () => clearTimeout(timer);
     }
   }, [openAddTask]);
 
   useEffect(() => {
-    if (deleteTaskReducer.status === "success") {
-      dispatch(
-        taskApi.list({
-          status,
-          projectId: currentProject.projectId,
-          isTrashed: false,
-        })
-      );
-    }
+    fetchTaskList();
   }, [deleteTaskReducer.status]);
 
   useEffect(() => {
-    if (searchTextReducerPrev !== undefined && currentProject.projectId) {
+    if (searchTextReducerPrev !== undefined) {
+      fetchTaskList(searchTextReducer);
+    }
+  }, [searchTextReducer]);
+
+  const fetchTaskList = (searchTextReducer: string = "") => {
+    if (currentProject.projectId) {
       dispatch(
         taskApi.list({
           projectId: currentProject.projectId,
@@ -113,7 +94,7 @@ const Tasks = () => {
         })
       );
     }
-  }, [searchTextReducer]);
+  };
 
   const getLoader = () => {
     if (selected === 0) {

@@ -15,9 +15,13 @@ import clsx from "clsx";
 import { FaList } from "react-icons/fa";
 import Button from "../../../../components/Button";
 import UserInfo from "../sharedComponents/userInfo";
-import { Task } from "../../../../slices/task/taskSlices";
-import { useState } from "react";
+import { Task, taskApi } from "../../../../slices/task/taskSlices";
+import { useEffect, useState } from "react";
 import CreateTask from "../create/createTasks";
+import { useParams } from "react-router-dom";
+import usePrevious from "../../../../misc/usePrevious";
+import { AppDispatch, RootState } from "../../../../store";
+import { useDispatch, useSelector } from "react-redux";
 
 export interface TableProps {
   tasks: Task[];
@@ -33,6 +37,42 @@ const ICONS = {
 const Table = ({ tasks, handleDeleteTask }: TableProps) => {
   const [openCreateTask, setOpenCreateTask] = useState(false);
   const [taskId, setTaskId] = useState("");
+  const params = useParams();
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  const currentProject = useSelector(
+    (state: RootState) => state.navbarReducer.currentProject
+  );
+
+  const setOpenCreateTaskPrev = usePrevious(openCreateTask);
+  const status = params?.status || "";
+
+  useEffect(() => {
+    if (
+      setOpenCreateTaskPrev &&
+      setOpenCreateTaskPrev !== openCreateTask &&
+      !openCreateTask
+    ) {
+      const timer = setTimeout(() => {
+        fetchTaskList();
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openCreateTask]);
+
+  const fetchTaskList = () => {
+    if (currentProject.projectId) {
+      dispatch(
+        taskApi.list({
+          projectId: currentProject.projectId,
+          status,
+          isTrashed: false,
+        })
+      );
+    }
+  };
 
   const TableHeader = () => (
     <thead className="w-full border-b border-gray-300 bg-gray-50">

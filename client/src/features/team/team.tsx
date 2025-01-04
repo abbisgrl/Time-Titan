@@ -26,9 +26,13 @@ const TeamListing = () => {
     (state: RootState) => state.navbarReducer.searchText
   );
 
+  const deleteTeamReducer = useSelector(
+    (state: RootState) => state.teamReducer.delete
+  );
   const teamList = teamListReducer?.data;
 
   const searchTextReducerPrev = usePrevious(searchTextReducer);
+  const openAddModalPrev = usePrevious(openAddModal);
 
   const ProjectList = useCallback(() => {
     return projectData?.data?.map((project) => ({
@@ -59,12 +63,31 @@ const TeamListing = () => {
     }
   }, [searchTextReducer]);
 
+  useDidMountEffect(() => {
+    if (deleteTeamReducer.status === "success") {
+      dispatch(teamApi.list({ searchText: "" }));
+    }
+  }, [deleteTeamReducer.status]);
+
+  useEffect(() => {
+    if (
+      openAddModalPrev &&
+      openAddModalPrev !== openAddModal &&
+      !openAddModal
+    ) {
+      const timer = setTimeout(() => {
+        dispatch(teamApi.list({ searchText: "" }));
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openAddModal]);
+
   const handleEdit = (id: string) => {
     setTeamEditId(id);
   };
 
   const handleDelete = (id: string) => {
-    console.log({ id });
     dispatch(teamApi.delete(id));
   };
 

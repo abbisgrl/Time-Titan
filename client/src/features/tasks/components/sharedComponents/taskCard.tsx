@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MdAttachFile,
   MdKeyboardArrowDown,
@@ -18,6 +18,8 @@ import { Task, taskApi } from "../../../../slices/task/taskSlices";
 import CreateSubTasks from "../create/createSubTasks";
 import { MdEdit, MdDelete } from "react-icons/md";
 import CreateTask from "../create/createTasks";
+import usePrevious from "../../../../misc/usePrevious";
+import { useParams } from "react-router-dom";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -33,18 +35,67 @@ const TaskCard = ({
   task: Task;
   handleDeleteTask: (taskId: string) => void;
 }) => {
+  const params = useParams();
   const { isAdmin, isOwner, userId } = useSelector(
     (state: RootState) => state.userDetails?.data
   );
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const [openCreateSubtask, setOpenCreateSubtask] = useState(false);
   const [openCreateTask, setOpenCreateTask] = useState(false);
+  const [openCreateSubtask, setOpenCreateSubtask] = useState(false);
   const [taskId, setTaskId] = useState("");
   const [subTasksOpen, setSubTasksOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
+
+  const currentProject = useSelector(
+    (state: RootState) => state.navbarReducer.currentProject
+  );
+
+  const setOpenCreateTaskPrev = usePrevious(openCreateTask);
+  const setOpenCreateSubtaskPrev = usePrevious(openCreateSubtask);
+  const status = params?.status || "";
+
+  useEffect(() => {
+    if (
+      setOpenCreateTaskPrev &&
+      setOpenCreateTaskPrev !== openCreateTask &&
+      !openCreateTask
+    ) {
+      const timer = setTimeout(() => {
+        fetchTaskList();
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openCreateTask]);
+
+  useEffect(() => {
+    if (
+      setOpenCreateSubtaskPrev &&
+      setOpenCreateSubtaskPrev !== openCreateSubtask &&
+      !openCreateSubtask
+    ) {
+      const timer = setTimeout(() => {
+        fetchTaskList();
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openCreateSubtask]);
+
+  const fetchTaskList = () => {
+    if (currentProject.projectId) {
+      dispatch(
+        taskApi.list({
+          projectId: currentProject.projectId,
+          status,
+          isTrashed: false,
+        })
+      );
+    }
+  };
 
   const handleEditTask = () => {
     setTaskId(task.taskId);

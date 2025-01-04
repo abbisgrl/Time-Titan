@@ -49,15 +49,7 @@ const TrashedTasks = () => {
   );
 
   useDidMountEffect(() => {
-    if (currentProject.projectId) {
-      dispatch(
-        taskApi.list({
-          status: "",
-          isTrashed: true,
-          projectId: currentProject.projectId,
-        })
-      );
-    }
+    fetchTaskList();
   }, [currentProject.projectId]);
 
   useEffect(() => {
@@ -71,28 +63,26 @@ const TrashedTasks = () => {
       deleteTaskReducer.status === "success" ||
       restoreTaskReducer.status === "success"
     ) {
-      dispatch(
-        taskApi.list({
-          status: "",
-          isTrashed: true,
-          projectId: currentProject.projectId,
-        })
-      );
+      fetchTaskList();
     }
   }, [deleteTaskReducer.status, restoreTaskReducer.status]);
 
   useDidMountEffect(() => {
+    fetchTaskList(searchTextReducer);
+  }, [searchTextReducer]);
+
+  const fetchTaskList = (searchTextReducer: string = "") => {
     if (currentProject.projectId) {
       dispatch(
         taskApi.list({
           projectId: currentProject.projectId,
           status: "",
-          isTrashed: false,
+          isTrashed: true,
           searchText: searchTextReducer,
         })
       );
     }
-  }, [searchTextReducer]);
+  };
 
   const restoreTask = async (taskId: string) => {
     dispatch(taskApi.restoreTask({ taskId }));

@@ -41,6 +41,9 @@ const CreateTask = ({
   const taskCreateReducer = useSelector(
     (state: RootState) => state.taskReducer.create
   );
+  const taskUpdateReducer = useSelector(
+    (state: RootState) => state.taskReducer.updateTask
+  );
 
   const [formData, setFormData] = useState({
     title: "",
@@ -147,6 +150,20 @@ const CreateTask = ({
       });
     }
   }, [taskCreateReducer]);
+
+  useEffect(() => {
+    if (taskUpdateReducer?.status === "success") {
+      setOpen(false);
+      setFormData({
+        title: "",
+        description: "",
+        priority: "normal",
+        stage: "todo",
+        team: {},
+        dueDate: new Date(),
+      });
+    }
+  }, [taskUpdateReducer]);
 
   const projectTeamListFunction = useCallback((): teamOption[] => {
     return (

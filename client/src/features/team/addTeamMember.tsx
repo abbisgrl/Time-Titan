@@ -122,6 +122,7 @@ const AddTeamMember = ({
     } else {
       dispatch(teamApi.create(teamData));
     }
+    setOpen(false);
   };
 
   return (
