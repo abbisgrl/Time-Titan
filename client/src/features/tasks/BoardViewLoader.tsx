@@ -1,7 +1,7 @@
 import clsx from "clsx";
 
 const TaskCardLoader = () => {
-  const categories: any = {
+  const categories: { [key: string]: number } = {
     "To Do": 3,
     "In Progress": 3,
     Completed: 3,

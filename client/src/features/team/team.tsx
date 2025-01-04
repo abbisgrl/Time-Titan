@@ -7,6 +7,8 @@ import AddTeamMember from "./addTeamMember";
 import { roleMap } from "../../misc";
 import TeamListingLoader from "./teamListingLoader";
 import NoRecordsFound from "../../components/NoRecordsFound";
+import useDidMountEffect from "../../misc/useDidMountEffect";
+import usePrevious from "../../misc/usePrevious";
 
 const TeamListing = () => {
   const [openAddModal, setIsOpenAddModal] = useState(false);
@@ -20,7 +22,13 @@ const TeamListing = () => {
     (state: RootState) => state.projectReducer.list
   );
 
+  const searchTextReducer = useSelector(
+    (state: RootState) => state.navbarReducer.searchText
+  );
+
   const teamList = teamListReducer?.data;
+
+  const searchTextReducerPrev = usePrevious(searchTextReducer);
 
   const ProjectList = useCallback(() => {
     return projectData?.data?.map((project) => ({
@@ -29,8 +37,8 @@ const TeamListing = () => {
     }));
   }, [projectData]);
 
-  useEffect(() => {
-    dispatch(teamApi.list());
+  useDidMountEffect(() => {
+    dispatch(teamApi.list({ searchText: "" }));
   }, []);
 
   useEffect(() => {
@@ -45,11 +53,17 @@ const TeamListing = () => {
     }
   }, [openAddModal]);
 
-  const handleEdit = (id: any) => {
+  useEffect(() => {
+    if (searchTextReducerPrev !== undefined) {
+      dispatch(teamApi.list({ searchText: searchTextReducer }));
+    }
+  }, [searchTextReducer]);
+
+  const handleEdit = (id: string) => {
     setTeamEditId(id);
   };
 
-  const handleDelete = (id: any) => {
+  const handleDelete = (id: string) => {
     console.log({ id });
     dispatch(teamApi.delete(id));
   };
@@ -129,13 +143,13 @@ const TeamListing = () => {
                   <div className="col-span-2 px-4 py-3 text-center">
                     <button
                       className="px-3 py-1 mr-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-                      onClick={() => handleEdit(user.userId)}
+                      onClick={() => user.userId && handleEdit(user.userId)}
                     >
                       Edit
                     </button>
                     <button
                       className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
-                      onClick={() => handleDelete(user.userId)}
+                      onClick={() => user.userId && handleDelete(user.userId)}
                     >
                       Delete
                     </button>
@@ -186,13 +200,13 @@ const TeamListing = () => {
                   <div className="mt-4">
                     <button
                       className="px-3 py-1 mr-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-                      onClick={() => handleEdit(user.userId)}
+                      onClick={() => user.userId && handleEdit(user.userId)}
                     >
                       Edit
                     </button>
                     <button
                       className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
-                      onClick={() => handleDelete(user.userId)}
+                      onClick={() => user.userId && handleDelete(user.userId)}
                     >
                       Delete
                     </button>

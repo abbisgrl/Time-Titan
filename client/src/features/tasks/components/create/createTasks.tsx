@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FormInput from "../../../../components/FormInput";
 import ModalWrapper from "../../../../components/ModalWrapper";
-import Select from "react-select";
+import Select, { SingleValue } from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,37 +11,7 @@ import { Task, taskApi } from "../../../../slices/task/taskSlices";
 import { formatDate } from "../../../../misc";
 import CreateSubTasks from "./createSubTasks";
 import { FaTrashAlt, FaEdit, FaPlusCircle } from "react-icons/fa";
-
-type teamOption = {
-  label?: string;
-  value?: string;
-};
-
-type SubTask = {
-  createdAt: string;
-  description: string;
-  dueDate: string;
-  subTaskId: string;
-  tag: string;
-  taskId: string;
-  title: string;
-  updatedAt: string;
-  status: string;
-  __v: number;
-  _id: string;
-};
-
-type TaskComment = {
-  commentId: string;
-  createdAt: string;
-  taskId: string;
-  updatedAt: string;
-  userId: string;
-  userName: string;
-  __v: number;
-  _id: string;
-  comment: string;
-};
+import { SubTask, TaskComment, teamOption } from "../../tasksTypes";
 
 const CreateTask = ({
   open,
@@ -52,7 +22,7 @@ const CreateTask = ({
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  currentProject?: { projectId: "" };
+  currentProject?: { projectId: string };
   taskId?: string;
   setTaskId?: (taskId: string) => void;
 }) => {
@@ -65,6 +35,12 @@ const CreateTask = ({
     (state: RootState) => state.taskReducer.viewTask
   );
   const { userId } = useSelector((state: RootState) => state.userDetails?.data);
+  const taskCommentReducer = useSelector(
+    (state: RootState) => state.taskReducer.addComment
+  );
+  const taskCreateReducer = useSelector(
+    (state: RootState) => state.taskReducer.create
+  );
 
   const [formData, setFormData] = useState({
     title: "",
@@ -108,7 +84,8 @@ const CreateTask = ({
 
   useEffect(() => {
     if (viewTask?.status === "success") {
-      const { taskDetails } = viewTask?.data;
+      const taskDetails = viewTask?.data?.taskDetails;
+      if (!taskDetails) return;
       const {
         title,
         description,
@@ -119,7 +96,7 @@ const CreateTask = ({
         comments: taskComments,
         subTasks: subtasks,
       } = taskDetails as Task & {
-        team: any[];
+        team: string[];
         comments: TaskComment[];
         subtasks: SubTask[];
       };
@@ -143,8 +120,33 @@ const CreateTask = ({
   useEffect(() => {
     if (!openCreateSubtask) {
       setSubTaskId("");
+      setTimeout(() => {
+        if (taskId) {
+          dispatch(taskApi.viewTask({ taskId: taskId || "" }));
+        }
+      }, 1000);
     }
   }, [openCreateSubtask]);
+
+  useEffect(() => {
+    if (taskCommentReducer?.status === "success" && taskId) {
+      dispatch(taskApi.viewTask({ taskId: taskId || "" }));
+    }
+  }, [taskCommentReducer]);
+
+  useEffect(() => {
+    if (taskCreateReducer?.status === "success") {
+      setOpen(false);
+      setFormData({
+        title: "",
+        description: "",
+        priority: "normal",
+        stage: "todo",
+        team: {},
+        dueDate: new Date(),
+      });
+    }
+  }, [taskCreateReducer]);
 
   const projectTeamListFunction = useCallback((): teamOption[] => {
     return (
@@ -155,12 +157,14 @@ const CreateTask = ({
     );
   }, [projectTeamList]);
 
-  const handleChange = (name: string, value: any) => {
+  const handleChange = (name: string, value: string | Date | teamOption) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleTeamChange = (selectedOptions: any) => {
-    handleChange("team", selectedOptions);
+  const handleTeamChange = (newValue: SingleValue<teamOption>) => {
+    if (newValue) {
+      handleChange("team", newValue);
+    }
   };
 
   const handleCommentSubmit = () => {
@@ -170,7 +174,6 @@ const CreateTask = ({
       userId,
     };
     dispatch(taskApi.addComment(comment));
-    dispatch(taskApi.viewTask({ taskId: taskId || "" }));
     setNewComment("");
   };
 
@@ -200,15 +203,6 @@ const CreateTask = ({
     } else {
       dispatch(taskApi.create(taskData));
     }
-    setOpen(false);
-    setFormData({
-      title: "",
-      description: "",
-      priority: "normal",
-      stage: "todo",
-      team: {},
-      dueDate: new Date(),
-    });
   };
 
   return (
@@ -316,7 +310,9 @@ const CreateTask = ({
             </label>
             <DatePicker
               selected={formData.dueDate}
-              onChange={(date) => handleChange("dueDate", date)}
+              onChange={(date: Date | null) =>
+                handleChange("dueDate", date || new Date())
+              }
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
               dateFormat="MM/dd/yyyy"
             />
@@ -328,12 +324,14 @@ const CreateTask = ({
               Assign Team
             </label>
             <Select
-              options={projectTeamListFunction()}
+              onChange={(newValue) =>
+                handleTeamChange(newValue as SingleValue<teamOption>)
+              }
               value={formData.team}
-              onChange={handleTeamChange}
               className="react-select-container"
               classNamePrefix="react-select"
               placeholder="Select team members"
+              options={projectTeamListFunction()}
             />
           </div>
 
@@ -349,37 +347,44 @@ const CreateTask = ({
         {/* Right Section: Comments and Subtasks */}
         {taskId && (
           <div className="flex-1 space-y-4 text-sm">
-            {/* Comments */}
-            <div>
-              <h3 className="text-base font-semibold mb-2">Comments</h3>
-              <div className="space-y-2">
-                {comments?.length > 0 ? (
-                  comments.map((comment: TaskComment, index) => (
-                    <div
-                      key={index}
-                      className="p-2 bg-gray-100 rounded border border-gray-200"
-                    >
-                      <div className="flex items-center space-x-2 mb-1">
-                        <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center">
-                          {comment.userName?.[0]?.toUpperCase()}
+            {/* Comments and Subtasks Container */}
+            <div className="flex flex-col h-full">
+              {/* Comments */}
+              <div className="overflow-y-auto flex-1 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold">Comments</h3>
+                </div>
+                <div className="space-y-3">
+                  {comments.length ? (
+                    comments.map((comment, index) => (
+                      <div
+                        key={index}
+                        className="p-2 bg-gray-100 rounded border border-gray-200"
+                      >
+                        <div className="flex items-center space-x-2 mb-1">
+                          <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center">
+                            {comment.userName?.[0]?.toUpperCase()}
+                          </div>
+                          <span className="font-semibold">
+                            {comment.userName}
+                          </span>
                         </div>
-                        <span className="font-semibold">
-                          {comment.userName}
-                        </span>
+                        <p className="text-xs text-gray-800">
+                          {comment?.comment}
+                        </p>
+                        <div className="text-xs text-gray-600">
+                          {formatDate(new Date(comment?.createdAt))}
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-800">
-                        {comment?.comment}
-                      </p>
-                      <div className="text-xs text-gray-600">
-                        {formatDate(new Date(comment?.createdAt))}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-gray-500">No Comments</p>
-                )}
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-500">No Comments</p>
+                  )}
+                </div>
               </div>
-              <div className="mt-3 flex space-x-2 items-center">
+
+              {/* Comment Input */}
+              <div className="flex items-center mt-3 space-x-2">
                 <input
                   type="text"
                   value={newComment}
@@ -394,79 +399,79 @@ const CreateTask = ({
                   <FaPlusCircle />
                 </button>
               </div>
-            </div>
 
-            {/* Subtasks */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-semibold">Subtasks</h3>
-                <button
-                  onClick={() => setOpenCreateSubtask(true)}
-                  className="text-blue-500 hover:text-blue-600 text-xl"
-                >
-                  <FaPlusCircle />
-                </button>
-              </div>
-              <div className="space-y-2">
-                {subTasks.map((subTask: SubTask) => (
-                  <div
-                    key={subTask.subTaskId}
-                    className="flex justify-between items-center bg-gray-100 p-2 rounded"
-                    style={{ height: "40px" }}
+              {/* Subtasks */}
+              <div className="overflow-y-auto mt-4 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold">Subtasks</h3>
+                  <button
+                    onClick={() => setOpenCreateSubtask(true)}
+                    className="text-blue-500 hover:text-blue-600 text-xl"
                   >
-                    <div className="flex items-center">
-                      <span>{subTask.title}</span>
-                      <div className="ml-2 text-xs text-gray-500">
-                        {formatDate(new Date(subTask.dueDate))}
+                    <FaPlusCircle />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {subTasks.map((subTask: SubTask) => (
+                    <div
+                      key={subTask.subTaskId}
+                      className="flex justify-between items-center bg-gray-100 p-2 rounded"
+                      style={{ height: "40px" }}
+                    >
+                      <div className="flex items-center">
+                        <span>{subTask.title}</span>
+                        <div className="ml-2 text-xs text-gray-500">
+                          {formatDate(new Date(subTask.dueDate))}
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2 items-center">
+                        <select
+                          value={subTask.status}
+                          onChange={(e) =>
+                            handleSubTaskStatusChange(
+                              subTask.subTaskId,
+                              e.target.value
+                            )
+                          }
+                          className="px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        >
+                          <option value="todo">To Do</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                        <FaEdit
+                          onClick={() => {
+                            setSubTaskId(subTask.subTaskId);
+                            setTimeout(() => {
+                              setOpenCreateSubtask(true);
+                            }, 500);
+                          }}
+                          className="text-gray-500 cursor-pointer"
+                        />
+                        <FaTrashAlt
+                          onClick={() => {
+                            dispatch(
+                              taskApi.subTaskDelete({
+                                subTaskId: subTask.subTaskId,
+                              })
+                            );
+                            dispatch(taskApi.viewTask({ taskId }));
+                          }}
+                          className="text-red-500 cursor-pointer"
+                        />
                       </div>
                     </div>
+                  ))}
+                </div>
 
-                    <div className="flex space-x-2 items-center">
-                      <select
-                        value={subTask.status}
-                        onChange={(e) =>
-                          handleSubTaskStatusChange(
-                            subTask.subTaskId,
-                            e.target.value
-                          )
-                        }
-                        className="px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
-                      >
-                        <option value="todo">To Do</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                      <FaEdit
-                        onClick={() => {
-                          setSubTaskId(subTask.subTaskId);
-                          setTimeout(() => {
-                            setOpenCreateSubtask(true);
-                          }, 500);
-                        }}
-                        className="text-gray-500 cursor-pointer"
-                      />
-                      <FaTrashAlt
-                        onClick={() => {
-                          dispatch(
-                            taskApi.subTaskDelete({
-                              subTaskId: subTask.subTaskId,
-                            })
-                          );
-                          dispatch(taskApi.viewTask({ taskId }));
-                        }}
-                        className="text-red-500 cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                ))}
+                <CreateSubTasks
+                  open={openCreateSubtask}
+                  setOpen={setOpenCreateSubtask}
+                  taskId={taskId || ""}
+                  subTaskId={subTaskId}
+                />
               </div>
-
-              <CreateSubTasks
-                open={openCreateSubtask}
-                setOpen={setOpenCreateSubtask}
-                taskId={taskId || ""}
-                subTaskId={subTaskId}
-              />
             </div>
           </div>
         )}

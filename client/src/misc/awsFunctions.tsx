@@ -1,15 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      REACT_APP_REGION: string;
-      REACT_APP_AWS_ACCESS_KEY_ID: string;
-      REACT_APP_AWS_SECRET_ACCESS_KEY: string;
-      REACT_APP_BUCKET_NAME: string;
-    }
-  }
-}
 const s3Client = new S3Client({
   region: "us-east-1",
   credentials: {

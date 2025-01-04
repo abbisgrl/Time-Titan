@@ -9,9 +9,16 @@ import Project from '../models/project';
 
 export const getTeamList = async (req: UserRequest, res: express.Response) => {
   const { userId } = req.user || {};
+  const { searchQuery } = req.query;
+  const conditions: any = { ownerId: userId, isOwner: false };
+
+  if (searchQuery) {
+    const searchRegex = new RegExp(searchQuery as string, 'i');
+    conditions.$or = [{ name: { $regex: searchRegex } }, { email: { $regex: searchRegex } }, { role: { $regex: searchRegex } }];
+  }
 
   try {
-    const users = await User.find({ ownerId: userId, isOwner: false }, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
+    const users = await User.find(conditions, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
     res.status(200).json(users);
   } catch (error) {
     return res.status(400).json({ status: false, message: error.message });

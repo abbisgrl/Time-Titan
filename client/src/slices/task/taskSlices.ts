@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
@@ -31,7 +32,7 @@ export interface TaskData {
   description: string;
   priority: string;
   stage: string;
-  team: { label?: string; value?: string };
+  team: { label?: string; value?: string } | string[];
   taskId?: string;
 }
 
@@ -60,7 +61,9 @@ interface TaskState {
   create: ApiState<any[]>;
   updateTask: ApiState<any[]>;
   list: ApiState<{ taskData: Task[] }>;
+  trashTask: ApiState<any[]>;
   deleteTask: ApiState<any[]>;
+  restoreTask: ApiState<any[]>;
   viewTask: ApiState<{ taskDetails: Task }>;
   subtask: ApiState<any[]>;
   addComment: ApiState<any[]>;
@@ -81,11 +84,31 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
-  list: createAsyncThunk<any[], { status: string; projectId: string }>(
+  list: createAsyncThunk<
+    any[],
+    {
+      status: string;
+      isTrashed: boolean;
+      projectId: string;
+      searchText?: string;
+    }
+  >(
     "team/list",
-    async ({ status, projectId }: { status: string; projectId: string }) => {
+    async ({
+      status,
+      isTrashed,
+      projectId,
+      searchText,
+    }: {
+      status: string;
+      isTrashed: boolean;
+      projectId: string;
+      searchText?: string;
+    }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/list/${projectId}?status=${status}`,
+        `http://localhost:8000/tasks/list/${projectId}?status=${status}&isTrashed=${isTrashed}&searchQuery=${
+          searchText || ""
+        } `,
         "get"
       );
       return (response as { data: any[] }).data;
@@ -112,12 +135,32 @@ export const taskApi = {
       return (response as { data: any[] }).data;
     }
   ),
+  trashTask: createAsyncThunk<any[], { taskId: string }>(
+    "team/trashTask",
+    async ({ taskId }: { taskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/trash/${taskId}`,
+        "put"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
   deleteTask: createAsyncThunk<any[], { taskId: string }>(
     "team/deleteTask",
     async ({ taskId }: { taskId: string }) => {
       const response = await callApi(
         `http://localhost:8000/tasks/delete/${taskId}`,
         "delete"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
+  restoreTask: createAsyncThunk<any[], { taskId: string }>(
+    "team/restoreTask",
+    async ({ taskId }: { taskId: string }) => {
+      const response = await callApi(
+        `http://localhost:8000/tasks/restoreTask/${taskId}`,
+        "put"
       );
       return (response as { data: any[] }).data;
     }
@@ -182,7 +225,9 @@ const initialState: TaskState = {
   create: { status: "idle", data: [] },
   updateTask: { status: "idle", data: [] },
   list: { status: "idle", data: { taskData: [] as Task[] } },
+  trashTask: { status: "idle", data: [] },
   deleteTask: { status: "idle", data: [] },
+  restoreTask: { status: "idle", data: [] },
   viewTask: { status: "idle", data: { taskDetails: {} as Task } },
   subtask: { status: "idle", data: [] },
   addComment: { status: "idle", data: [] },

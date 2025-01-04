@@ -48,7 +48,7 @@ export const BGS = [
   "bg-green-600",
 ];
 
-export const formatDate = (date: any) => {
+export const formatDate = (date: Date) => {
   // Get the month, day, and year
   const month = date.toLocaleString("en-US", { month: "short" });
   const day = date.getDate();
@@ -59,10 +59,10 @@ export const formatDate = (date: any) => {
   return formattedDate;
 };
 
-export const dateFormatter = (dateString: any) => {
-  const inputDate: any = new Date(dateString);
+export const dateFormatter = (dateString: string | number | Date) => {
+  const inputDate: Date = new Date(dateString);
 
-  if (isNaN(inputDate)) {
+  if (isNaN(inputDate.getTime())) {
     return "Invalid Date";
   }
 

@@ -26,10 +26,17 @@ const ICONS = {
   normal: <MdArrowForward />,
 };
 
-const TaskCard = ({ task }: { task: Task }) => {
+const TaskCard = ({
+  task,
+  handleDeleteTask,
+}: {
+  task: Task;
+  handleDeleteTask: (taskId: string) => void;
+}) => {
   const { isAdmin, isOwner, userId } = useSelector(
     (state: RootState) => state.userDetails?.data
   );
+
   const dispatch = useDispatch<AppDispatch>();
 
   const [openCreateSubtask, setOpenCreateSubtask] = useState(false);
@@ -42,10 +49,6 @@ const TaskCard = ({ task }: { task: Task }) => {
   const handleEditTask = () => {
     setTaskId(task.taskId);
     setOpenCreateTask(true);
-  };
-
-  const handleDeleteTask = () => {
-    dispatch(taskApi.deleteTask({ taskId: task.taskId }));
   };
 
   const handleAddComment = () => {
@@ -80,7 +83,9 @@ const TaskCard = ({ task }: { task: Task }) => {
             <MdEdit size={16} />
           </button>
           <button
-            onClick={handleDeleteTask}
+            onClick={() => {
+              handleDeleteTask(task.taskId);
+            }}
             className="text-red-600 hover:text-red-800 text-xs"
           >
             <MdDelete size={16} />

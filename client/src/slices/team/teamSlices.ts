@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
@@ -41,11 +42,18 @@ interface TeamState {
 }
 
 export const teamApi = {
-  list: createAsyncThunk<User[]>("team/list", async () => {
-    const response = await callApi("http://localhost:8000/team/list", "get");
+  list: createAsyncThunk<
+    User[],
+    {
+      searchText?: string;
+    }
+  >("team/list", async ({ searchText }: { searchText?: string }) => {
+    const response = await callApi(
+      `http://localhost:8000/team/list?searchQuery=${searchText || ""}`,
+      "get"
+    );
     return (response as { data: User[] }).data;
   }),
-
   create: createAsyncThunk<any[], TeamData>(
     "team/create",
     async (teamData: TeamData) => {

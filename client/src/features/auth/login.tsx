@@ -15,13 +15,13 @@ const Login = () => {
   useEffect(() => {
     if (loginReducer.status === "success") {
       Cookies.set("token", loginReducer?.data?.token || "");
-      navigate("/");
+      navigate("/dashboard");
     } else if (loginReducer.status === "failed") {
       console.log(loginReducer.data);
     }
   }, [JSON.stringify(loginReducer)]);
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch(loginApi(formData));
   };

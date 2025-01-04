@@ -15,14 +15,13 @@ import clsx from "clsx";
 import { FaList } from "react-icons/fa";
 import Button from "../../../../components/Button";
 import UserInfo from "../sharedComponents/userInfo";
-import { Task, taskApi } from "../../../../slices/task/taskSlices";
+import { Task } from "../../../../slices/task/taskSlices";
 import { useState } from "react";
 import CreateTask from "../create/createTasks";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../../store";
 
 export interface TableProps {
   tasks: Task[];
+  handleDeleteTask: (taskId: string) => void;
 }
 
 const ICONS = {
@@ -31,15 +30,9 @@ const ICONS = {
   low: <MdKeyboardArrowDown />,
 };
 
-const Table = ({ tasks }: TableProps) => {
+const Table = ({ tasks, handleDeleteTask }: TableProps) => {
   const [openCreateTask, setOpenCreateTask] = useState(false);
   const [taskId, setTaskId] = useState("");
-  const dispatch = useDispatch<AppDispatch>();
-
-  const deleteClicks = (taskId: string) => {
-    console.log("Deleting task with ID:", taskId);
-    dispatch(taskApi.deleteTask({ taskId }));
-  };
 
   const TableHeader = () => (
     <thead className="w-full border-b border-gray-300 bg-gray-50">
@@ -132,7 +125,7 @@ const Table = ({ tasks }: TableProps) => {
           className="text-red-700 hover:text-red-500 text-sm ml-3"
           label="Delete"
           type="button"
-          onClick={() => deleteClicks(task.taskId)}
+          onClick={() => handleDeleteTask(task.taskId)}
         />
       </td>
     </tr>

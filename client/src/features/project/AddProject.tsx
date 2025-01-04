@@ -6,23 +6,23 @@ import FormInput from "../../components/FormInput";
 import { uploadFileToS3 } from "../../misc/awsFunctions";
 import { AppDispatch, RootState } from "../../store";
 import { projectApi } from "../../slices/project/projectSlices";
+import useDidMountEffect from "../../misc/useDidMountEffect";
 
 const AddProject = ({
   open,
   setOpen,
-  data,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  data: any;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
   const createProjectData = useSelector(
-    (state: RootState) => state.projectReducer?.list?.data
+    (state: RootState) => state.projectReducer?.create
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = useState({
     name: { message: "", state: false },
     description: { message: "", state: false },
@@ -35,11 +35,18 @@ const AddProject = ({
     logo: "",
   });
 
-  const handleChange = (id: string, value: any) => {
+  useDidMountEffect(() => {
+    if (createProjectData.status === "success") {
+      dispatch(projectApi.list());
+      setOpen(false);
+    }
+  }, [createProjectData.status]);
+
+  const handleChange = (id: string, value: string | File) => {
     setFormData((data) => ({ ...data, [id]: value }));
   };
 
-  const handleUpload = async (file: any) => {
+  const handleUpload = async (file: File) => {
     if (!file) return alert("Please select a file first!");
 
     try {
@@ -68,7 +75,7 @@ const AddProject = ({
       <ModalWrapper open={open} setOpen={setOpen}>
         <form onSubmit={handleOnSubmit} className="">
           <h2 className="text-base font-bold leading-6 text-gray-900 mb-4">
-            {data ? "UPDATE PROFILE" : "ADD NEW USER"}
+            {"Add Project"}
           </h2>
 
           <div className="mt-2 flex flex-col gap-6">
@@ -79,7 +86,9 @@ const AddProject = ({
               label="Project Name"
               className="w-full rounded"
               error={errors.name?.state ? errors.name.message : ""}
-              onChange={(id: string, value: any) => handleChange(id, value)}
+              onChange={(id: string, value: string | File) =>
+                handleChange(id, value)
+              }
               value={formData.name}
             />
             <FormInput
@@ -91,7 +100,9 @@ const AddProject = ({
               error={
                 errors.description?.state ? errors.description.message : ""
               }
-              onChange={(id: string, value: any) => handleChange(id, value)}
+              onChange={(id: string, value: string | File) =>
+                handleChange(id, value)
+              }
               value={formData.description}
             />
 

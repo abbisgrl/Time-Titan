@@ -1,14 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Logo from "../assets/logo.png";
 import AddProject from "../features/project/AddProject";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
 import { ProjectList } from "../slices/project/projectSlices";
-import { selectCurrentProject } from "../slices/layout/navbar";
+import {
+  searchTextReducer,
+  selectCurrentProject,
+} from "../slices/layout/navbar";
+import useDidMountEffect from "../misc/useDidMountEffect";
+import usePrevious from "../misc/usePrevious";
+import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const location = useLocation();
 
   const dispatch = useDispatch<AppDispatch>();
   const [projectList, setProjectList] = useState<ProjectList[]>([]);
@@ -16,6 +25,7 @@ const Navbar = () => {
     null
   );
 
+  const searchTextPrev = usePrevious(searchText);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const projectListReducer = useSelector(
@@ -34,6 +44,31 @@ const Navbar = () => {
       dispatch(selectCurrentProject(selectedProduct));
     }
   }, [selectedProduct]);
+
+  useDidMountEffect(() => {
+    if (searchTextPrev ?? false) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        dispatch(searchTextReducer(searchText));
+        timeoutRef.current = null;
+      }, 700);
+
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      };
+    }
+  }, [searchText]);
+
+  useDidMountEffect(() => {
+    if (searchText) {
+      setSearchText("");
+    }
+  }, [location]);
 
   const handleProductSelect = (product: ProjectList) => {
     setSelectedProduct(product);
@@ -74,6 +109,18 @@ const Navbar = () => {
                   type="search"
                   className="border border-gray-300 focus:ring-indigo-600 focus:border-indigo-600 sm:text-sm w-full rounded-lg py-2 pl-10 pr-3
                   sm:w-48 md:w-64 lg:w-80 xl:w-[30rem] transition-all"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchText(e.target.value)
+                  }
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === "Enter") {
+                      if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current);
+                      }
+                      dispatch(searchTextReducer(searchText));
+                    }
+                  }}
+                  value={searchText}
                 />
               </div>
 
@@ -184,7 +231,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <AddProject open={open} setOpen={setOpen} data={""} />
+      <AddProject open={open} setOpen={setOpen} />
     </div>
   );
 };

@@ -8,7 +8,7 @@ const callApi = async (
 ) => {
   const token: string | undefined = Cookies.get("token");
 
-  let headers = {
+  const headers = {
     Authorization: token,
   };
   return new Promise((resolve, reject) => {

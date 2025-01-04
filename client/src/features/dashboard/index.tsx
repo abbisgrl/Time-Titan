@@ -5,17 +5,8 @@ import { dashboardApi } from "../../slices/dashboard/dashboardSlice";
 import { taskApi } from "../../slices/task/taskSlices";
 import { FaEdit } from "react-icons/fa";
 import CreateTask from "../tasks/components/create/createTasks";
-
-interface DashboardTask {
-  createdAt: string;
-  description: string;
-  priority: string;
-  stage: string;
-  taskId: string;
-  title: string;
-  dueDate: string;
-  team: string[];
-}
+import useDidMountEffect from "../../misc/useDidMountEffect";
+import { DashboardResponse, DashboardTask } from "./dashboardTypes";
 
 const statuses = [
   "To Do",
@@ -25,9 +16,7 @@ const statuses = [
   "Completed",
 ];
 
-const priorities = ["Low", "Medium", "High"];
-
-const mapToGetStatus: any = {
+const mapToGetStatus: { [key: string]: string } = {
   "To Do": "todo",
   "In Progress": "in-progress",
   "Ready to QA": "qa-testing",
@@ -35,7 +24,7 @@ const mapToGetStatus: any = {
   Completed: "completed",
 };
 
-const mapToGetStatusReverse: any = {
+const mapToGetStatusReverse: { [key: string]: string } = {
   todo: "To Do",
   "in-progress": "In Progress",
   "qa-testing": "Ready to QA",
@@ -45,26 +34,21 @@ const mapToGetStatusReverse: any = {
 
 const Dashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const currentProject: any = useSelector(
+  const currentProject = useSelector(
     (state: RootState) => state.navbarReducer.currentProject
-  );
-  const getCardDetails: any = useSelector(
+  ) as { projectId: string; [key: string]: string };
+
+  const getCardDetails = useSelector(
     (state: RootState) => state.dashboardReducer.getCardDetails
-  );
-  const getTaskList: any = useSelector(
+  ) as unknown as DashboardResponse;
+
+  const getTaskList = useSelector(
     (state: RootState) => state.dashboardReducer.taskList
-  );
+  ) as unknown as { status: string; data: { taskList: DashboardTask[] } };
 
   const [tasks, setTasks] = useState<DashboardTask[]>([]);
   const [openTaskDetails, setOpenTaskDetails] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState("");
-
-  useEffect(() => {
-    if (currentProject.projectId) {
-      dispatch(dashboardApi.getDashboardCardDetails(currentProject.projectId));
-      dispatch(dashboardApi.getDashboardTasksList(currentProject.projectId));
-    }
-  }, [currentProject]);
 
   useEffect(() => {
     if (!openTaskDetails) {
@@ -72,7 +56,14 @@ const Dashboard = () => {
     }
   }, [openTaskDetails]);
 
-  useEffect(() => {
+  useDidMountEffect(() => {
+    if (currentProject.projectId) {
+      dispatch(dashboardApi.getDashboardCardDetails(currentProject.projectId));
+      dispatch(dashboardApi.getDashboardTasksList(currentProject.projectId));
+    }
+  }, [JSON.stringify(currentProject)]);
+
+  useDidMountEffect(() => {
     if (getTaskList.status === "success") {
       setTasks(getTaskList?.data?.taskList);
     }
@@ -82,7 +73,11 @@ const Dashboard = () => {
     setTasks((prevTasks) =>
       prevTasks.map((task: DashboardTask) => {
         if (task.taskId === taskId) {
-          const updatedTaskData = { ...task, stage: mapToGetStatus[newStatus] };
+          const updatedTaskData = {
+            ...task,
+            stage: mapToGetStatus[newStatus],
+            team: task.team,
+          };
           dispatch(taskApi.updateTask(updatedTaskData));
           return updatedTaskData;
         }
@@ -91,12 +86,15 @@ const Dashboard = () => {
     );
   };
 
-  let statusCounts: any = {};
+  let statusCounts: { [key: string]: number } = {};
   if (getCardDetails.data.cardDetails) {
-    statusCounts = statuses.reduce((acc: any, status: any) => {
-      acc[status] = getCardDetails.data.cardDetails[mapToGetStatus[status]];
-      return acc;
-    }, {});
+    statusCounts = statuses.reduce(
+      (acc: { [key: string]: number }, status: string) => {
+        acc[status] = getCardDetails.data.cardDetails[mapToGetStatus[status]];
+        return acc;
+      },
+      {}
+    );
   }
 
   return (

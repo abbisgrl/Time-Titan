@@ -6,7 +6,7 @@ interface loginState {
   status: "idle" | "pending" | "success" | "failed";
   data: {
     token?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
   } | null;
 }
 
@@ -37,6 +37,7 @@ export const loginApi = createAsyncThunk(
 );
 
 export const userDetailsApi = createAsyncThunk("userDetails", async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response: any = await callApi(
     "http://localhost:8000/auth/userDetails",
     "get"

@@ -23,12 +23,27 @@ const CreateSubTasks = ({
     (state: RootState) => state.taskReducer?.subTaskView?.data
   );
 
+  const subTaskCreateReducer = useSelector(
+    (state: RootState) => state.taskReducer.subtask
+  );
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     dueDate: new Date(),
     tag: "",
   });
+
+  useEffect(() => {
+    if (!subTaskId) {
+      setFormData({
+        title: "",
+        description: "",
+        dueDate: new Date(),
+        tag: "",
+      });
+    }
+  }, [open]);
 
   useEffect(() => {
     if (subTaskId) {
@@ -43,7 +58,13 @@ const CreateSubTasks = ({
     }
   }, [subTaskDetails]);
 
-  const handleChange = (name: string, value: any) => {
+  useEffect(() => {
+    if (subTaskCreateReducer?.status === "success") {
+      setOpen(false);
+    }
+  }, [subTaskCreateReducer]);
+
+  const handleChange = (name: string, value: string | Date) => {
     setFormData({ ...formData, [name]: value });
   };
 
@@ -99,7 +120,9 @@ const CreateSubTasks = ({
           </label>
           <DatePicker
             selected={formData.dueDate}
-            onChange={(date) => handleChange("dueDate", date)}
+            onChange={(date: Date | null) =>
+              handleChange("dueDate", date || new Date())
+            }
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

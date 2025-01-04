@@ -6,6 +6,8 @@ import {
   deleteSubTask,
   deleteTasks,
   getTaskList,
+  moveToTrash,
+  restoreTask,
   updateSubTask,
   updateTasks,
   viewSubTask,
@@ -22,6 +24,10 @@ router.post('/create', protectRoute, createTasks);
 router.post('/update', protectRoute, updateTasks);
 
 router.delete('/delete/:taskId', protectRoute, deleteTasks);
+
+router.put('/trash/:taskId', protectRoute, moveToTrash);
+
+router.put('/restoreTask/:taskId', protectRoute, restoreTask);
 
 router.get('/view/:taskId', protectRoute, viewTask);
 

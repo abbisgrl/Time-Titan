@@ -9,16 +9,22 @@ type Status = 'todo' | 'in-progress' | 'qa-testing' | 'pm-testing' | 'completed'
 
 export const getTaskList = async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
-  const { status } = req.query;
+  const { status, isTrashed, searchQuery } = req.query;
 
   const validationError = validateRequiredFields([{ name: 'projectId', value: projectId, message: 'Project details is missing' }], res);
   if (validationError) return;
 
-  const condition: any = { projectId };
+  const condition: any = { projectId, isTrashed: isTrashed === 'true' };
 
   if (status && ['todo', 'in-progress', 'qa-testing', 'pm-testing', 'completed'].includes(status as Status)) {
     condition.stage = status;
   }
+  if (searchQuery) {
+    const searchRegex = new RegExp(searchQuery as string, 'i');
+    condition.$or = [{ title: { $regex: searchRegex } }, { description: { $regex: searchRegex } }];
+  }
+  console.dir({ condition }, { depth: null });
+  console.dir({ condition }, { depth: null });
 
   try {
     const taskData = await Task.aggregate([
@@ -85,6 +91,7 @@ export const createTasks = async (req: express.Request, res: express.Response) =
       dueDate,
       team: [team.value],
       taskId: uuidv4(),
+      isTrashed: false,
     };
 
     const response = await Task.create(taskObject);
@@ -200,6 +207,38 @@ export const deleteTasks = async (req: express.Request, res: express.Response) =
       }
       return res.status(200).send({ message: 'Task deleted successfully' });
     }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const moveToTrash = async (req: express.Request, res: express.Response) => {
+  const { taskId } = req.params || {};
+  const taskDetails = await Task.aggregate([
+    {
+      $match: { taskId },
+    },
+  ]);
+  try {
+    if (!taskDetails) {
+      return res.status(401).send({ message: 'Task does not exists' });
+    } else {
+      await Task.updateOne({ taskId }, { isTrashed: true });
+      return res.status(200).send({ message: 'Task Moved to trashed successfully' });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const restoreTask = async (req: express.Request, res: express.Response) => {
+  const { taskId } = req.params || {};
+  try {
+    const taskObject = {
+      isTrashed: false,
+    };
+    const response = await Task.updateOne({ taskId }, { $set: taskObject });
+    return res.status(200).send({ message: 'Task moved successfully', response });
   } catch (error) {
     console.log(error);
   }

@@ -7,12 +7,7 @@ import FormInput from "../../components/FormInput";
 import { AppDispatch, RootState } from "../../store";
 import { TeamData, User, teamApi } from "../../slices/team/teamSlices";
 import { roleMap, roles } from "../../misc";
-
-// Define types for projects and roles
-type ProjectOption = {
-  label: string;
-  value: string;
-};
+import { ProjectOption } from "./teamTypes";
 
 const AddTeamMember = ({
   open,
@@ -78,12 +73,18 @@ const AddTeamMember = ({
         return projectInfo[0];
       });
 
-      const teamDetails: any = {
-        name,
-        email,
-        password: memberPassword,
+      const teamDetails: {
+        name: string;
+        email: string;
+        password: string;
+        role: ProjectOption;
+        projects: ProjectOption[];
+      } = {
+        name: name || "",
+        email: email || "",
+        password: memberPassword || "",
         role: userRole,
-        projects: userProjects,
+        projects: userProjects || [],
       };
       setFormData(teamDetails);
     }
@@ -98,7 +99,10 @@ const AddTeamMember = ({
     );
   }, [projectData]);
 
-  const handleChange = (id: string, value: any) => {
+  const handleChange = (
+    id: string,
+    value: string | ProjectOption | ProjectOption[]
+  ) => {
     setFormData((data) => ({ ...data, [id]: value }));
   };
 
@@ -111,7 +115,7 @@ const AddTeamMember = ({
       ...formData,
       role: userRole,
       projects: projectIds,
-      ownerId: ownerDetails?.data?.userId!,
+      ownerId: ownerDetails?.data?.userId || "",
     };
     if (teamId) {
       dispatch(teamApi.update({ teamData, userId: teamId }));
@@ -135,7 +139,10 @@ const AddTeamMember = ({
             label="Full Name"
             className="w-full rounded"
             error={errors.name?.state ? errors.name.message : ""}
-            onChange={(id: string, value: any) => handleChange(id, value)}
+            onChange={(
+              id: string,
+              value: string | ProjectOption | ProjectOption[]
+            ) => handleChange(id, value)}
             value={formData.name}
           />
           <FormInput
@@ -145,7 +152,10 @@ const AddTeamMember = ({
             label="Email"
             className="w-full rounded"
             error={errors.email?.state ? errors.email.message : ""}
-            onChange={(id: string, value: any) => handleChange(id, value)}
+            onChange={(
+              id: string,
+              value: string | ProjectOption | ProjectOption[]
+            ) => handleChange(id, value)}
             value={formData.email}
           />
           <FormInput
@@ -155,7 +165,10 @@ const AddTeamMember = ({
             label="Password"
             className="w-full rounded"
             error={errors.password?.state ? errors.password.message : ""}
-            onChange={(id: string, value: any) => handleChange(id, value)}
+            onChange={(
+              id: string,
+              value: string | ProjectOption | ProjectOption[]
+            ) => handleChange(id, value)}
             value={formData.password}
           />
 

@@ -16,6 +16,8 @@ import Table from "./components/views/table";
 import BoardViewLoader from "./BoardViewLoader";
 import TeamListingLoader from "../team/teamListingLoader";
 import NoRecordsFound from "../../components/NoRecordsFound";
+import usePrevious from "../../misc/usePrevious";
+import useDidMountEffect from "../../misc/useDidMountEffect";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -32,19 +34,86 @@ const TASK_TYPE = {
 
 const Tasks = () => {
   const params = useParams();
-
   const [selected, setSelected] = useState(0);
   const [openAddTask, setOpenAddTask] = useState(false);
-
   const dispatch = useDispatch<AppDispatch>();
 
   const tasksListReducer = useSelector(
     (state: RootState) => state.taskReducer?.list
   );
 
-  const currentProject: any = useSelector(
+  const currentProject = useSelector(
     (state: RootState) => state.navbarReducer.currentProject
   );
+
+  const deleteTaskReducer = useSelector(
+    (state: RootState) => state.taskReducer.trashTask
+  );
+
+  const searchTextReducer = useSelector(
+    (state: RootState) => state.navbarReducer.searchText
+  );
+
+  const tasks = tasksListReducer?.data?.taskData;
+  const status = params?.status || "";
+
+  const openAddTaskPrev = usePrevious(openAddTask);
+  const searchTextReducerPrev = usePrevious(searchTextReducer);
+
+  useDidMountEffect(() => {
+    if (currentProject.projectId) {
+      dispatch(
+        taskApi.list({
+          projectId: currentProject.projectId,
+          status,
+          isTrashed: false,
+        })
+      );
+    }
+  }, [currentProject, status]);
+
+  useEffect(() => {
+    if (openAddTaskPrev && openAddTaskPrev !== openAddTask && !openAddTask) {
+      const timer = setTimeout(() => {
+        if (currentProject.projectId) {
+          dispatch(
+            taskApi.list({
+              projectId: currentProject.projectId,
+              status,
+              isTrashed: false,
+            })
+          );
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [openAddTask]);
+
+  useEffect(() => {
+    if (deleteTaskReducer.status === "success") {
+      dispatch(
+        taskApi.list({
+          status,
+          projectId: currentProject.projectId,
+          isTrashed: false,
+        })
+      );
+    }
+  }, [deleteTaskReducer.status]);
+
+  useEffect(() => {
+    if (searchTextReducerPrev !== undefined && currentProject.projectId) {
+      dispatch(
+        taskApi.list({
+          projectId: currentProject.projectId,
+          status,
+          isTrashed: false,
+          searchText: searchTextReducer,
+        })
+      );
+    }
+  }, [searchTextReducer]);
 
   const getLoader = () => {
     if (selected === 0) {
@@ -53,14 +122,24 @@ const Tasks = () => {
     return <TeamListingLoader />;
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    dispatch(taskApi.trashTask({ taskId }));
+  };
+
   const getListComponent = () => {
     if (tasks?.length) {
       if (selected === 0) {
-        return <BoardView tasks={tasks} status={status} />;
+        return (
+          <BoardView
+            tasks={tasks}
+            status={status}
+            handleDeleteTask={handleDeleteTask}
+          />
+        );
       }
       return (
         <div className="w-full overflow-hidden bg-white rounded-lg shadow-sm">
-          <Table tasks={tasks} />
+          <Table tasks={tasks} handleDeleteTask={handleDeleteTask} />
         </div>
       );
     } else {
@@ -72,20 +151,6 @@ const Tasks = () => {
       );
     }
   };
-
-  const tasks = tasksListReducer?.data?.taskData;
-  const status = params?.status || "";
-
-  useEffect(() => {
-    if (currentProject.projectId) {
-      dispatch(
-        taskApi.list({
-          projectId: currentProject.projectId,
-          status,
-        })
-      );
-    }
-  }, [currentProject, status]);
 
   return (
     <div className="w-full p-6 bg-gray-50 rounded-lg shadow-md">
@@ -126,7 +191,6 @@ const Tasks = () => {
         {["idle", "pending"].includes(tasksListReducer?.status)
           ? getLoader()
           : getListComponent()}
-        {/* Task Views */}
       </Tabs>
 
       {/* Add Task Modal */}

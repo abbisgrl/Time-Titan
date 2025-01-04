@@ -1,12 +1,24 @@
 import { Task } from "../../../../slices/task/taskSlices";
 import TaskCard from "../sharedComponents/taskCard";
 
-const BoardView = ({ tasks, status }: { tasks: Task[]; status?: string }) => {
+const BoardView = ({
+  tasks,
+  status,
+  handleDeleteTask,
+}: {
+  tasks: Task[];
+  status?: string;
+  handleDeleteTask: (taskId: string) => void;
+}) => {
   if (status) {
     return (
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {tasks?.map((task, index) => (
-          <TaskCard task={task} key={index} />
+          <TaskCard
+            task={task}
+            key={index}
+            handleDeleteTask={handleDeleteTask}
+          />
         ))}
       </div>
     );
@@ -26,7 +38,11 @@ const BoardView = ({ tasks, status }: { tasks: Task[]; status?: string }) => {
         <div key={category} className="flex flex-col gap-4">
           {categorizedTasks[category as keyof typeof categorizedTasks]?.map(
             (task, index) => (
-              <TaskCard task={task} key={index} />
+              <TaskCard
+                task={task}
+                key={index}
+                handleDeleteTask={handleDeleteTask}
+              />
             )
           )}
         </div>

@@ -1,17 +1,6 @@
 import { Tab } from "@headlessui/react";
 import React from "react";
-
-interface TabItem {
-  title: string;
-  icon: React.ReactNode;
-}
-
-interface TabsProps {
-  tabs: TabItem[];
-  setSelected: (selectedIndex: number) => void;
-  children: React.ReactNode;
-  selected: any;
-}
+import { TabsProps } from "../../tasksTypes";
 
 const Tabs: React.FC<TabsProps> = ({ tabs, setSelected, children }) => {
   return (
