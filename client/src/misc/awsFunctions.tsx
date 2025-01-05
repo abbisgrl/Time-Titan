@@ -1,10 +1,14 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
+const awsAccessKeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
+const awsSecretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
+const region = import.meta.env.VITE_REGION;
+
 const s3Client = new S3Client({
-  region: "us-east-1",
+  region: region,
   credentials: {
-    accessKeyId: "AKIA22ZOBKF5FZK2WQ7U",
-    secretAccessKey: "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",
+    accessKeyId: awsAccessKeyId || "",
+    secretAccessKey: awsSecretAccessKey || "",
   },
 });
 
