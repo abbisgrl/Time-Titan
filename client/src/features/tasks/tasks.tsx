@@ -74,7 +74,9 @@ const Tasks = () => {
   }, [openAddTask]);
 
   useEffect(() => {
-    fetchTaskList();
+    if (deleteTaskReducer.status === "success") {
+      fetchTaskList();
+    }
   }, [deleteTaskReducer.status]);
 
   useEffect(() => {

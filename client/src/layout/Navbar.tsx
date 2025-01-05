@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import Logo from "../assets/logo.png";
 import AddProject from "../features/project/AddProject";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,14 +12,15 @@ import {
 } from "../slices/layout/navbar";
 import useDidMountEffect from "../misc/useDidMountEffect";
 import usePrevious from "../misc/usePrevious";
-import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false); // New state for profile dropdown
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const dispatch = useDispatch<AppDispatch>();
   const [projectList, setProjectList] = useState<ProjectList[]>([]);
@@ -31,6 +34,8 @@ const Navbar = () => {
   const projectListReducer = useSelector(
     (state: RootState) => state.projectReducer.list
   );
+
+  const { name } = useSelector((state: RootState) => state.userDetails?.data);
 
   useEffect(() => {
     if (projectListReducer.status === "success") {
@@ -73,6 +78,11 @@ const Navbar = () => {
   const handleProductSelect = (product: ProjectList) => {
     setSelectedProduct(product);
     setDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    Cookies.remove("token");
+    navigate("/login");
   };
 
   return (
@@ -184,48 +194,29 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              {/* Icons and User Info */}
-              <div className="md:space-x-6 justify-end items-center ml-auto flex space-x-3 ml-2">
-                {/* Notifications */}
-                <div className="relative">
-                  <p
-                    className="pt-1 pr-1 pb-1 pl-1 bg-white text-gray-700 rounded-full transition-all duration-200
-                hover:text-gray-900 focus:outline-none hover:bg-gray-100"
-                  >
-                    <span className="justify-center items-center flex">
-                      <svg
-                        className="w-6 h-6"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                        />
-                      </svg>
-                    </span>
-                  </p>
-                  <p
-                    className="px-1.5 py-0.5 font-semibold text-xs items-center bg-indigo-600 text-white rounded-full inline-flex
-                absolute -top-px -right-1"
-                  >
-                    2
-                  </p>
-                </div>
-
-                {/* User Info */}
-                <div className="justify-center items-center flex relative">
+              {/* User Info */}
+              <div className="relative ml-2">
+                <div
+                  className="flex items-center cursor-pointer"
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                >
                   <img
                     src="https://static01.nyt.com/images/2019/11/08/world/08quebec/08quebec-superJumbo.jpg"
                     className="object-cover h-9 w-9 rounded-full mr-2 bg-gray-300"
                     alt="User Avatar"
                   />
-                  <p className="font-semibold text-sm">Marrie Currie</p>
+                  <p className="font-semibold text-sm">{name}</p>
                 </div>
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-lg border border-gray-200 z-50">
+                    <p
+                      onClick={handleLogout}
+                      className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      Logout
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

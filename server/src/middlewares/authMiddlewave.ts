@@ -8,6 +8,7 @@ export interface UserRequest extends express.Request {
     isAdmin: boolean;
     userId: string;
     isOwner: boolean;
+    ownerId: string;
   };
 }
 
@@ -26,7 +27,7 @@ export const protectRoute = async (req: UserRequest, res: express.Response, next
     if (token) {
       const JWT_SECRET: string = process.env.JWT_SECRET || '';
       const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      const resp = await User.findOne({ userId: decodedToken.userId }, { isOwner: 1, isAdmin: 1, email: 1 });
+      const resp = await User.findOne({ userId: decodedToken.userId }, { isOwner: 1, isAdmin: 1, email: 1, ownerId: 1 });
 
       // Check if the user was found
       if (!resp) {
@@ -38,6 +39,7 @@ export const protectRoute = async (req: UserRequest, res: express.Response, next
         isAdmin: resp.isAdmin,
         userId: decodedToken.userId,
         isOwner: resp.isOwner,
+        ownerId: resp.ownerId,
       };
 
       next();

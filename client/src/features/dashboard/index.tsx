@@ -164,7 +164,7 @@ const Dashboard = () => {
                     </div>
                     <div className="col-span-1 flex items-center justify-center space-x-2">
                       <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full text-white ${
+                        className={`text-xs font-semibold px-2 py-1 rounded-full text-white capitalize ${
                           task.priority === "High"
                             ? "bg-red-600"
                             : task.priority === "Medium"

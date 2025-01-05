@@ -38,6 +38,7 @@ const UserSchema = new mongoose.Schema(
       min: 5,
     },
     ownerId: { type: String, required: true },
+    status: { type: String, required: true },
   },
   { timestamps: true },
 );

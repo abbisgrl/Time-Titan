@@ -2,7 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 
 export const navbarSlice = createSlice({
   name: "navbarSlice",
-  initialState: { currentProject: { projectId: "" }, searchText: "" },
+  initialState: {
+    currentProject: { projectId: "" },
+    searchText: "",
+    isSideMenuCollapsed: false,
+  },
   reducers: {
     selectCurrentProject: (state, action) => {
       state.currentProject = action.payload;
@@ -10,8 +14,12 @@ export const navbarSlice = createSlice({
     searchTextReducer: (state, action) => {
       state.searchText = action.payload;
     },
+    isSideMenuCollapsed: (state, action) => {
+      state.isSideMenuCollapsed = action.payload;
+    },
   },
 });
 
-export const { selectCurrentProject, searchTextReducer } = navbarSlice.actions;
+export const { selectCurrentProject, searchTextReducer, isSideMenuCollapsed } =
+  navbarSlice.actions;
 export default navbarSlice.reducer;

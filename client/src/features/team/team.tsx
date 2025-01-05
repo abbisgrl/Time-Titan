@@ -100,7 +100,7 @@ const TeamListing = () => {
             <div className="grid grid-cols-12 bg-gray-100 rounded-t-lg shadow-md font-semibold text-sm text-gray-600 sticky top-[-16px] z-10">
               <div className="col-span-2 px-4 py-3">Full Name</div>
               <div className="col-span-3 px-4 py-3">Email</div>
-              <div className="col-span-2 px-4 py-3">Password</div>
+              <div className="col-span-1 px-4 py-3">Status</div>
               <div className="col-span-1 px-4 py-3">Role</div>
               <div className="col-span-1 px-4 py-3">Active</div>
               <div className="col-span-1 px-4 py-3">Projects</div>
@@ -122,8 +122,14 @@ const TeamListing = () => {
                   <div className="col-span-3 px-4 py-3 text-gray-800">
                     {user.email}
                   </div>
-                  <div className="col-span-2 px-4 py-3 text-gray-800">
-                    {user.memberPassword}
+                  <div
+                    className={`col-span-1 px-3 py-1 rounded-full ${
+                      user.status === "pending"
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
+                    } text-gray-800 capitalize`}
+                  >
+                    {user.status}
                   </div>
                   <div className="col-span-1 px-4 py-3 text-gray-800">
                     {roleLabel}

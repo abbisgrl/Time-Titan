@@ -9,7 +9,7 @@ export interface User {
   email?: string;
   isActive?: boolean;
   name?: string;
-  password?: string;
+  status?: string;
   role?: string;
   updatedAt?: string;
   memberPassword?: string;

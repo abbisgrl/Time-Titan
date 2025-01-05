@@ -12,6 +12,7 @@ import { formatDate } from "../../../../misc";
 import CreateSubTasks from "./createSubTasks";
 import { FaTrashAlt, FaEdit, FaPlusCircle } from "react-icons/fa";
 import { SubTask, TaskComment, teamOption } from "../../tasksTypes";
+import useDidMountEffect from "../../../../misc/useDidMountEffect";
 
 const CreateTask = ({
   open,
@@ -34,7 +35,9 @@ const CreateTask = ({
   const viewTask = useSelector(
     (state: RootState) => state.taskReducer.viewTask
   );
-  const { userId } = useSelector((state: RootState) => state.userDetails?.data);
+  const { isAdmin, isOwner, userId } = useSelector(
+    (state: RootState) => state.userDetails?.data
+  );
   const taskCommentReducer = useSelector(
     (state: RootState) => state.taskReducer.addComment
   );
@@ -73,7 +76,7 @@ const CreateTask = ({
     }
   }, [open]);
 
-  useEffect(() => {
+  useDidMountEffect(() => {
     if (currentProject?.projectId) {
       dispatch(teamApi.projectTeamList(currentProject.projectId));
     }
@@ -421,12 +424,14 @@ const CreateTask = ({
               <div className="overflow-y-auto mt-4 flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-semibold">Subtasks</h3>
-                  <button
-                    onClick={() => setOpenCreateSubtask(true)}
-                    className="text-blue-500 hover:text-blue-600 text-xl"
-                  >
-                    <FaPlusCircle />
-                  </button>
+                  {(isAdmin || isOwner) && (
+                    <button
+                      onClick={() => setOpenCreateSubtask(true)}
+                      className="text-blue-500 hover:text-blue-600 text-xl"
+                    >
+                      <FaPlusCircle />
+                    </button>
+                  )}
                 </div>
                 <div className="space-y-2">
                   {subTasks.map((subTask: SubTask) => (
@@ -457,26 +462,30 @@ const CreateTask = ({
                           <option value="in-progress">In Progress</option>
                           <option value="completed">Completed</option>
                         </select>
-                        <FaEdit
-                          onClick={() => {
-                            setSubTaskId(subTask.subTaskId);
-                            setTimeout(() => {
-                              setOpenCreateSubtask(true);
-                            }, 500);
-                          }}
-                          className="text-gray-500 cursor-pointer"
-                        />
-                        <FaTrashAlt
-                          onClick={() => {
-                            dispatch(
-                              taskApi.subTaskDelete({
-                                subTaskId: subTask.subTaskId,
-                              })
-                            );
-                            dispatch(taskApi.viewTask({ taskId }));
-                          }}
-                          className="text-red-500 cursor-pointer"
-                        />
+                        {(isAdmin || isOwner) && (
+                          <>
+                            <FaEdit
+                              onClick={() => {
+                                setSubTaskId(subTask.subTaskId);
+                                setTimeout(() => {
+                                  setOpenCreateSubtask(true);
+                                }, 500);
+                              }}
+                              className="text-gray-500 cursor-pointer"
+                            />
+                            <FaTrashAlt
+                              onClick={() => {
+                                dispatch(
+                                  taskApi.subTaskDelete({
+                                    subTaskId: subTask.subTaskId,
+                                  })
+                                );
+                                dispatch(taskApi.viewTask({ taskId }));
+                              }}
+                              className="text-red-500 cursor-pointer"
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}

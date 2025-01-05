@@ -7,47 +7,59 @@ import {
 } from "react-icons/md";
 import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
 import { AiOutlineArrowRight, AiOutlineArrowLeft } from "react-icons/ai";
-
-const linkData = [
-  {
-    label: "Dashboard",
-    link: "/dashboard",
-    icon: <MdDashboard />,
-  },
-  {
-    label: "Tasks",
-    link: "/tasks",
-    icon: <FaTasks />,
-  },
-  {
-    label: "Completed",
-    link: "/tasks/completed",
-    icon: <MdTaskAlt />,
-  },
-  {
-    label: "In Progress",
-    link: "/tasks/in-progress",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "To Do",
-    link: "/tasks/todo",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "Team",
-    link: "/teams",
-    icon: <FaUsers />,
-  },
-  {
-    label: "Trash",
-    link: "/trashed",
-    icon: <FaTrashAlt />,
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store";
+import { isSideMenuCollapsed } from "../slices/layout/navbar";
+import useDidMountEffect from "../misc/useDidMountEffect";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isAdmin, isOwner } = useSelector(
+    (state: RootState) => state.userDetails?.data
+  );
+
+  const linkData = [
+    {
+      label: "Dashboard",
+      link: "/dashboard",
+      icon: <MdDashboard />,
+    },
+    {
+      label: "Tasks",
+      link: "/tasks",
+      icon: <FaTasks />,
+    },
+    {
+      label: "Completed",
+      link: "/tasks/completed",
+      icon: <MdTaskAlt />,
+    },
+    {
+      label: "In Progress",
+      link: "/tasks/in-progress",
+      icon: <MdOutlinePendingActions />,
+    },
+    {
+      label: "To Do",
+      link: "/tasks/todo",
+      icon: <MdOutlinePendingActions />,
+    },
+    ...(isAdmin || isOwner
+      ? [
+          {
+            label: "Team",
+            link: "/teams",
+            icon: <FaUsers />,
+          },
+        ]
+      : []),
+    {
+      label: "Trash",
+      link: "/trashed",
+      icon: <FaTrashAlt />,
+    },
+  ];
 
   // Set initial collapse state for small screens
   useEffect(() => {
@@ -56,9 +68,12 @@ const Sidebar = () => {
 
     const handleResize = () => setIsCollapsed(mediaQuery.matches);
     mediaQuery.addEventListener("change", handleResize);
-
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
+
+  useDidMountEffect(() => {
+    dispatch(isSideMenuCollapsed(isCollapsed));
+  }, [isCollapsed]);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);

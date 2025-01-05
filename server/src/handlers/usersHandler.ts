@@ -5,12 +5,12 @@ import User from '../models/user';
 import { validateRequiredFields } from '../helpers/validators';
 import { UserRequest } from '../middlewares/authMiddlewave';
 import Project from '../models/project';
-// import Project from '../models/project';
+import sendEmail from '../utils/SendEmail/sendEmail';
 
 export const getTeamList = async (req: UserRequest, res: express.Response) => {
-  const { userId } = req.user || {};
+  const { userId, ownerId, isAdmin } = req.user || {};
   const { searchQuery } = req.query;
-  const conditions: any = { ownerId: userId, isOwner: false };
+  const conditions: any = { ownerId: isAdmin ? ownerId : userId, isOwner: false };
 
   if (searchQuery) {
     const searchRegex = new RegExp(searchQuery as string, 'i');
@@ -18,7 +18,7 @@ export const getTeamList = async (req: UserRequest, res: express.Response) => {
   }
 
   try {
-    const users = await User.find(conditions, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0 });
+    const users = await User.find(conditions, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0, password: 0 });
     res.status(200).json(users);
   } catch (error) {
     return res.status(400).json({ status: false, message: error.message });
@@ -64,6 +64,8 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
         isActive: true,
         memberPassword: password,
         ownerId,
+        status: 'pending',
+        isAdmin: role === 'A',
       };
       await User.create(newUser);
 
@@ -83,6 +85,7 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
           console.error('Error during updates:', err);
         });
 
+      await sendEmail(email, 'inviteTeam', { inviteLink: `http://localhost:3000/create/password?email=${email}` });
       return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {

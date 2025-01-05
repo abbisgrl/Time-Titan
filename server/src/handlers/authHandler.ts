@@ -34,6 +34,24 @@ export const loginHandler = async (req: express.Request, res: express.Response, 
   }
 };
 
+export const createPasswordHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(handleError({ name: 'user not found', statusCode: 401, message: 'User not found' }, res));
+    }
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    await User.updateOne({ email }, { password: hashedPassword, status: 'accepted' });
+
+    res.status(200).json({ message: 'Password created successfully' });
+  } catch (err) {
+    throw new Error('Error signing');
+  }
+};
 // only for owner registration
 export const registerHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const { name, email, password, role } = req.body;

@@ -36,6 +36,21 @@ export const loginApi = createAsyncThunk(
   }
 );
 
+export const createPasswordApi = createAsyncThunk(
+  "auth/createPassword",
+  async ({ email, password }: { email: string; password: string }) => {
+    const response = await axios({
+      method: "post",
+      url: "http://localhost:8000/auth/createpassword",
+      data: {
+        email,
+        password,
+      },
+    });
+    return response.data;
+  }
+);
+
 export const userDetailsApi = createAsyncThunk("userDetails", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response: any = await callApi(
@@ -73,6 +88,24 @@ export const loginSlice = createSlice({
   },
 });
 
+export const createPassword = createSlice({
+  name: "createPassword",
+  initialState: initialLoginState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(createPasswordApi.fulfilled, (state, action) => {
+      state.status = "success";
+      state.data = action.payload;
+    });
+    builder.addCase(createPasswordApi.pending, (state) => {
+      state.status = "pending";
+    });
+    builder.addCase(createPasswordApi.rejected, (state) => {
+      state.status = "failed";
+    });
+  },
+});
+
 export const userDetailsSlice = createSlice({
   name: "userDetails",
   initialState: initialUserDetailsState,
@@ -92,4 +125,5 @@ export const userDetailsSlice = createSlice({
 });
 
 export const loginReducer = loginSlice.reducer;
+export const createPasswordReducer = createPassword.reducer;
 export const userDetailsReducer = userDetailsSlice.reducer;

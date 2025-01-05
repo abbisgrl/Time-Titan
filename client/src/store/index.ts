@@ -1,5 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { loginReducer, userDetailsReducer } from "../slices/auth/authSlices";
+import {
+  createPasswordReducer,
+  loginReducer,
+  userDetailsReducer,
+} from "../slices/auth/authSlices";
 import { teamReducer } from "../slices/team/teamSlices";
 import { projectReducer } from "../slices/project/projectSlices";
 import { taskReducer } from "../slices/task/taskSlices";
@@ -15,6 +19,7 @@ export const store = configureStore({
     taskReducer,
     navbarReducer,
     dashboardReducer,
+    createPasswordReducer,
   },
 });
 
