@@ -4,14 +4,20 @@ const awsAccessKeyId = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
 const awsSecretAccessKey = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
 const region = import.meta.env.VITE_REGION;
 
+if (!awsAccessKeyId || !awsSecretAccessKey || !region) {
+  throw new Error("Missing AWS credentials or region in environment variables");
+}
+
+// Initialize S3 Client
 const s3Client = new S3Client({
   region: region,
   credentials: {
-    accessKeyId: awsAccessKeyId || "",
-    secretAccessKey: awsSecretAccessKey || "",
+    accessKeyId: awsAccessKeyId,
+    secretAccessKey: awsSecretAccessKey,
   },
 });
 
+// Function to upload file to S3
 export const uploadFileToS3 = async (
   file: File,
   bucketName: string,
@@ -34,7 +40,7 @@ export const uploadFileToS3 = async (
 
     await s3Client.send(command);
 
-    const fileUrl = `https://${bucketName}.s3.us-east-1.amazonaws.com/${key}`;
+    const fileUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${key}`;
 
     return fileUrl;
   } catch (error) {
