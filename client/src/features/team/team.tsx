@@ -18,6 +18,7 @@ const TeamListing = () => {
   const teamListReducer = useSelector(
     (state: RootState) => state.teamReducer.list
   );
+
   const projectData = useSelector(
     (state: RootState) => state.projectReducer.list
   );
@@ -254,6 +255,7 @@ const TeamListing = () => {
       />
     );
   };
+
   return (
     <div className="container mx-auto p-4 max-w-screen-lg">
       <div className="flex items-center justify-between mb-8">
