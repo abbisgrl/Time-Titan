@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
-const API_URL = process.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface ApiState<T> {
   status: "idle" | "pending" | "success" | "failed";
