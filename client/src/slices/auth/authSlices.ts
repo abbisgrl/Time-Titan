@@ -23,6 +23,16 @@ interface userState {
   };
 }
 
+const initialLoginState: loginState = {
+  status: "idle",
+  data: {},
+};
+
+const initialUserDetailsState: userState = {
+  status: "idle",
+  data: {},
+};
+
 export const loginApi = createAsyncThunk(
   "auth/login",
   async ({ email, password }: { email: string; password: string }) => {
@@ -30,6 +40,30 @@ export const loginApi = createAsyncThunk(
       method: "post",
       url: `${API_URL}/auth/login`,
       data: {
+        email,
+        password,
+      },
+    });
+    return response.data;
+  }
+);
+
+export const signupApi = createAsyncThunk(
+  "auth/signup",
+  async ({
+    email,
+    password,
+    name,
+  }: {
+    email: string;
+    password: string;
+    name: string;
+  }) => {
+    const response = await axios({
+      method: "post",
+      url: `${API_URL}/auth/register`,
+      data: {
+        name,
         email,
         password,
       },
@@ -59,16 +93,6 @@ export const userDetailsApi = createAsyncThunk("userDetails", async () => {
   return response.data;
 });
 
-const initialLoginState: loginState = {
-  status: "idle",
-  data: {},
-};
-
-const initialUserDetailsState: userState = {
-  status: "idle",
-  data: {},
-};
-
 export const loginSlice = createSlice({
   name: "login",
   initialState: initialLoginState,
@@ -82,6 +106,24 @@ export const loginSlice = createSlice({
       state.status = "pending";
     });
     builder.addCase(loginApi.rejected, (state) => {
+      state.status = "failed";
+    });
+  },
+});
+
+export const signupSlice = createSlice({
+  name: "signup",
+  initialState: initialLoginState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(signupApi.fulfilled, (state, action) => {
+      state.status = "success";
+      state.data = action.payload;
+    });
+    builder.addCase(signupApi.pending, (state) => {
+      state.status = "pending";
+    });
+    builder.addCase(signupApi.rejected, (state) => {
       state.status = "failed";
     });
   },
@@ -124,5 +166,6 @@ export const userDetailsSlice = createSlice({
 });
 
 export const loginReducer = loginSlice.reducer;
+export const signupReducer = signupSlice.reducer;
 export const createPasswordReducer = createPassword.reducer;
 export const userDetailsReducer = userDetailsSlice.reducer;

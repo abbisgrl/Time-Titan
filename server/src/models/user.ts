@@ -34,7 +34,6 @@ const UserSchema = new mongoose.Schema(
     },
     memberPassword: {
       type: String,
-      required: true,
       min: 5,
     },
     ownerId: { type: String, required: true },

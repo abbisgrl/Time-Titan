@@ -1,30 +1,34 @@
-import "./login.css";
 import CoverImage from "../../assets/logo.png";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
-import { loginApi } from "../../slices/auth/authSlices";
+import { signupApi } from "../../slices/auth/authSlices";
 import { AppDispatch, RootState } from "../../store";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom"; // Import Link for navigation
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const dispatch = useDispatch<AppDispatch>();
-  const loginReducer = useSelector((state: RootState) => state.login);
+  const signupReducer = useSelector((state: RootState) => state.signupReducer);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loginReducer.status === "success") {
-      Cookies.set("token", loginReducer?.data?.token || "");
+    if (signupReducer.status === "success") {
+      Cookies.set("token", signupReducer?.data?.token || "");
       navigate("/dashboard");
-    } else if (loginReducer.status === "failed") {
-      console.log(loginReducer.data);
+    } else if (signupReducer.status === "failed") {
+      console.log(signupReducer.data);
     }
-  }, [JSON.stringify(loginReducer)]);
+  }, [JSON.stringify(signupReducer)]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(loginApi(formData));
+    dispatch(signupApi(formData));
   };
 
   return (
@@ -37,21 +41,38 @@ const Login = () => {
           className="w-3/4 mb-6 rounded-lg shadow-lg"
         />
         <h1 className="text-4xl font-bold animate-bounce mb-4">
-          Manage Your Projects Efficiently
+          Join Our Community
         </h1>
         <p className="text-lg text-center">
-          Stay organized and boost productivity with our all-in-one project and
-          task management tool. Plan, track, and collaborate seamlessly!
+          Sign up to start managing your projects effectively. Collaborate and
+          stay organized with our intuitive tools!
         </p>
       </div>
 
-      {/* Login form */}
+      {/* Signup form */}
       <div className="flex w-full md:w-1/2 items-center justify-center p-6">
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            Login to your account
+            Create an Account
           </h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-gray-600 mb-2" htmlFor="name">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                onChange={(e) =>
+                  setFormData((prevState) => ({
+                    ...prevState,
+                    name: e.target.value,
+                  }))
+                }
+              />
+            </div>
             <div>
               <label className="block text-gray-600 mb-2" htmlFor="email">
                 Email
@@ -90,13 +111,15 @@ const Login = () => {
               type="submit"
               className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600"
             >
-              Login
+              Sign Up
             </button>
           </form>
-          <p className="text-center text-gray-600 mt-4">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-blue-500 hover:underline">
-              Sign up here
+
+          {/* Link to Login Page */}
+          <p className="text-center mt-4">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-500 hover:underline">
+              Click here to login
             </Link>
           </p>
         </div>
@@ -105,4 +128,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

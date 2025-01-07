@@ -3,6 +3,7 @@ import {
   createPasswordReducer,
   loginReducer,
   userDetailsReducer,
+  signupReducer,
 } from "../slices/auth/authSlices";
 import { teamReducer } from "../slices/team/teamSlices";
 import { projectReducer } from "../slices/project/projectSlices";
@@ -13,13 +14,14 @@ import navbarReducer from "../slices/layout/navbar";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
+    signupReducer,
+    createPasswordReducer,
     projectReducer: projectReducer,
     teamReducer: teamReducer,
     userDetails: userDetailsReducer,
     taskReducer,
     navbarReducer,
     dashboardReducer,
-    createPasswordReducer,
   },
 });
 

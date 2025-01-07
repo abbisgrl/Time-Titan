@@ -7,6 +7,10 @@ import { FaEdit } from "react-icons/fa";
 import CreateTask from "../tasks/components/create/createTasks";
 import useDidMountEffect from "../../misc/useDidMountEffect";
 import { DashboardResponse, DashboardTask } from "./dashboardTypes";
+import NoProjectsFound from "../../components/NoProjectFound";
+import AddProject from "../project/AddProject";
+import { projectApi } from "../../slices/project/projectSlices";
+import usePrevious from "../../misc/usePrevious";
 
 const statuses = [
   "To Do",
@@ -49,6 +53,9 @@ const Dashboard = () => {
   const [tasks, setTasks] = useState<DashboardTask[]>([]);
   const [openTaskDetails, setOpenTaskDetails] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState("");
+  const [openCreateProject, setOpenCreateProject] = useState(false);
+
+  const previousOpenCreateProject = usePrevious(openCreateProject);
 
   useEffect(() => {
     if (!openTaskDetails) {
@@ -68,6 +75,16 @@ const Dashboard = () => {
       setTasks(getTaskList?.data?.taskList);
     }
   }, [getTaskList]);
+
+  useDidMountEffect(() => {
+    if (
+      previousOpenCreateProject !== undefined &&
+      previousOpenCreateProject !== openCreateProject &&
+      !openCreateProject
+    ) {
+      dispatch(projectApi.list());
+    }
+  }, [openCreateProject]);
 
   const handleStatusChange = (taskId: string, newStatus: string) => {
     setTasks((prevTasks) =>
@@ -94,6 +111,18 @@ const Dashboard = () => {
         return acc;
       },
       {}
+    );
+  }
+
+  if (!currentProject.projectId) {
+    return (
+      <>
+        <NoProjectsFound
+          buttonLabel="No Project Created"
+          onButtonClick={() => setOpenCreateProject(true)}
+        />
+        <AddProject open={openCreateProject} setOpen={setOpenCreateProject} />
+      </>
     );
   }
 

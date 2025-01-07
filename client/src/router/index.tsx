@@ -6,6 +6,7 @@ import TeamListing from "../features/team/team.tsx";
 import Tasks from "../features/tasks/tasks.tsx";
 import TrashedTasks from "../features/trash/trash.tsx";
 import CreatePassword from "../features/auth/createPassword.tsx";
+import Signup from "../features/auth/signup.tsx";
 
 const RoutesComponent = () => {
   const router = createBrowserRouter([
@@ -32,6 +33,10 @@ const RoutesComponent = () => {
     {
       path: "/login",
       element: <Login />,
+    },
+    {
+      path: "/signup",
+      element: <Signup />,
     },
     {
       path: "/create/password",

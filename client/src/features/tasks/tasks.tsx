@@ -17,6 +17,10 @@ import BoardViewLoader from "./BoardViewLoader";
 import TeamListingLoader from "../team/teamListingLoader";
 import NoRecordsFound from "../../components/NoRecordsFound";
 import usePrevious from "../../misc/usePrevious";
+import NoProjectsFound from "../../components/NoProjectFound";
+import AddProject from "../project/AddProject";
+import useDidMountEffect from "../../misc/useDidMountEffect";
+import { projectApi } from "../../slices/project/projectSlices";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -35,6 +39,7 @@ const Tasks = () => {
   const params = useParams();
   const [selected, setSelected] = useState(0);
   const [openAddTask, setOpenAddTask] = useState(false);
+  const [openCreateProject, setOpenCreateProject] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
   const tasksListReducer = useSelector(
@@ -58,6 +63,7 @@ const Tasks = () => {
 
   const openAddTaskPrev = usePrevious(openAddTask);
   const searchTextReducerPrev = usePrevious(searchTextReducer);
+  const previousOpenCreateProject = usePrevious(openCreateProject);
 
   useEffect(() => {
     fetchTaskList();
@@ -83,6 +89,16 @@ const Tasks = () => {
       fetchTaskList(searchTextReducer);
     }
   }, [searchTextReducer]);
+
+  useDidMountEffect(() => {
+    if (
+      previousOpenCreateProject !== undefined &&
+      previousOpenCreateProject !== openCreateProject &&
+      !openCreateProject
+    ) {
+      dispatch(projectApi.list());
+    }
+  }, [openCreateProject]);
 
   const fetchTaskList = (searchTextReducer: string = "") => {
     if (currentProject.projectId) {
@@ -133,6 +149,18 @@ const Tasks = () => {
       );
     }
   };
+
+  if (!currentProject.projectId) {
+    return (
+      <>
+        <NoProjectsFound
+          buttonLabel="No Project Created"
+          onButtonClick={() => setOpenCreateProject(true)}
+        />
+        <AddProject open={openCreateProject} setOpen={setOpenCreateProject} />
+      </>
+    );
+  }
 
   return (
     <div className="w-full p-6 bg-gray-50 rounded-lg shadow-md">

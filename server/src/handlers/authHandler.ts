@@ -54,7 +54,7 @@ export const createPasswordHandler = async (req: express.Request, res: express.R
 };
 // only for owner registration
 export const registerHandler = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   const validationError = validateRequiredFields(
     [
@@ -76,14 +76,17 @@ export const registerHandler = async (req: express.Request, res: express.Respons
     }
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
+    const ownerId = uuidv4();
     const newUser = new User({
       name,
       email,
       isAdmin: false,
-      role,
+      role: 'O',
       password: hashedPassword,
-      userId: uuidv4(),
+      userId: ownerId,
+      ownerId,
       isOwner: true,
+      status: 'accepted',
     });
 
     const JWT_SECRET = process.env.JWT_SECRET as string;
