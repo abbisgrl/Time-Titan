@@ -12,6 +12,7 @@ const Login = () => {
   const loginReducer = useSelector((state: RootState) => state.login);
   const navigate = useNavigate();
 
+  console.log("Login");
   useEffect(() => {
     if (loginReducer.status === "success") {
       Cookies.set("token", loginReducer?.data?.token || "");
