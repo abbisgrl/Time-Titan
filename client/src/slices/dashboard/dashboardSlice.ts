@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
+const API_URL = process.env.VITE_API_URL;
 
 interface ApiState<T> {
   status: "idle" | "pending" | "success" | "failed";
@@ -22,7 +23,7 @@ export const dashboardApi = {
     "dashboard/getCardDetails",
     async (projectId: string) => {
       const response = await callApi(
-        `http://localhost:8000/dashboard/cardsDetails/${projectId}`,
+        `${API_URL}/dashboard/cardsDetails/${projectId}`,
         "get"
       );
       return (response as { data: any[] }).data;
@@ -32,7 +33,7 @@ export const dashboardApi = {
     "dashboard/taskList",
     async (projectId: string) => {
       const response = await callApi(
-        `http://localhost:8000/dashboard/taskList/${projectId}`,
+        `${API_URL}/dashboard/taskList/${projectId}`,
         "get"
       );
       return (response as { data: any[] }).data;

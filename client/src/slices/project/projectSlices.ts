@@ -2,6 +2,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
+const API_URL = process.env.VITE_API_URL;
+
 // Define types
 export interface Project {
   userId: string;
@@ -29,7 +31,7 @@ export const projectApi = {
     "project/create",
     async (data) => {
       const response: any = await callApi(
-        "http://localhost:8000/project/add",
+        `${API_URL}/project/add`,
         "post",
         data
       );
@@ -38,10 +40,7 @@ export const projectApi = {
   ),
 
   list: createAsyncThunk<ProjectList[], void>("project/list", async () => {
-    const response: any = await callApi(
-      "http://localhost:8000/project/list",
-      "get"
-    );
+    const response: any = await callApi(`${API_URL}/project/list`, "get");
     return response.data;
   }),
 };

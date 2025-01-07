@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import callApi from "../../misc/callApi";
 
+const API_URL = process.env.VITE_API_URL;
+
 interface loginState {
   status: "idle" | "pending" | "success" | "failed";
   data: {
@@ -26,7 +28,7 @@ export const loginApi = createAsyncThunk(
   async ({ email, password }: { email: string; password: string }) => {
     const response = await axios({
       method: "post",
-      url: "http://localhost:8000/auth/login",
+      url: `${API_URL}/auth/login`,
       data: {
         email,
         password,
@@ -41,7 +43,7 @@ export const createPasswordApi = createAsyncThunk(
   async ({ email, password }: { email: string; password: string }) => {
     const response = await axios({
       method: "post",
-      url: "http://localhost:8000/auth/createpassword",
+      url: `${API_URL}/auth/createpassword`,
       data: {
         email,
         password,
@@ -53,10 +55,7 @@ export const createPasswordApi = createAsyncThunk(
 
 export const userDetailsApi = createAsyncThunk("userDetails", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const response: any = await callApi(
-    "http://localhost:8000/auth/userDetails",
-    "get"
-  );
+  const response: any = await callApi(`${API_URL}/auth/userDetails`, "get");
   return response.data;
 });
 

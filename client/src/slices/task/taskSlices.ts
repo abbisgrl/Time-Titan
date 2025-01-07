@@ -2,6 +2,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
+const API_URL = process.env.VITE_API_URL;
+
 interface TeamMember {
   _id: string;
   name: string;
@@ -77,7 +79,7 @@ export const taskApi = {
     "team/create",
     async (taskData: TaskData) => {
       const response = await callApi(
-        "http://localhost:8000/tasks/create",
+        `${API_URL}/tasks/create`,
         "post",
         taskData
       );
@@ -106,7 +108,7 @@ export const taskApi = {
       searchText?: string;
     }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/list/${projectId}?status=${status}&isTrashed=${isTrashed}&searchQuery=${
+        `${API_URL}/tasks/list/${projectId}?status=${status}&isTrashed=${isTrashed}&searchQuery=${
           searchText || ""
         } `,
         "get"
@@ -117,10 +119,7 @@ export const taskApi = {
   viewTask: createAsyncThunk<any[], { taskId: string }>(
     "team/viewTask",
     async ({ taskId }: { taskId: string }) => {
-      const response = await callApi(
-        `http://localhost:8000/tasks/view/${taskId}`,
-        "get"
-      );
+      const response = await callApi(`${API_URL}/tasks/view/${taskId}`, "get");
       return (response as { data: any[] }).data;
     }
   ),
@@ -128,7 +127,7 @@ export const taskApi = {
     "team/updateTask",
     async (taskData: TaskData) => {
       const response = await callApi(
-        "http://localhost:8000/tasks/update",
+        `${API_URL}/tasks/update`,
         "post",
         taskData
       );
@@ -138,10 +137,7 @@ export const taskApi = {
   trashTask: createAsyncThunk<any[], { taskId: string }>(
     "team/trashTask",
     async ({ taskId }: { taskId: string }) => {
-      const response = await callApi(
-        `http://localhost:8000/tasks/trash/${taskId}`,
-        "put"
-      );
+      const response = await callApi(`${API_URL}/tasks/trash/${taskId}`, "put");
       return (response as { data: any[] }).data;
     }
   ),
@@ -149,7 +145,7 @@ export const taskApi = {
     "team/deleteTask",
     async ({ taskId }: { taskId: string }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/delete/${taskId}`,
+        `${API_URL}/tasks/delete/${taskId}`,
         "delete"
       );
       return (response as { data: any[] }).data;
@@ -159,7 +155,7 @@ export const taskApi = {
     "team/restoreTask",
     async ({ taskId }: { taskId: string }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/restoreTask/${taskId}`,
+        `${API_URL}/tasks/restoreTask/${taskId}`,
         "put"
       );
       return (response as { data: any[] }).data;
@@ -169,7 +165,7 @@ export const taskApi = {
     "team/subtask",
     async (subtaskData: Partial<SubTaskData>) => {
       const response = await callApi(
-        "http://localhost:8000/tasks/subtask/create",
+        `${API_URL}/tasks/subtask/create`,
         "post",
         subtaskData
       );
@@ -180,7 +176,7 @@ export const taskApi = {
     "team/subtaskUpdate",
     async (subtaskData: any) => {
       const response = await callApi(
-        "http://localhost:8000/tasks/subtask/update",
+        `${API_URL}/tasks/subtask/update`,
         "post",
         subtaskData
       );
@@ -191,7 +187,7 @@ export const taskApi = {
     "team/subTaskView",
     async ({ subTaskId }: { subTaskId: string }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/subtask/view/${subTaskId}`,
+        `${API_URL}/tasks/subtask/view/${subTaskId}`,
         "get"
       );
       return (response as { data: any[] }).data;
@@ -201,7 +197,7 @@ export const taskApi = {
     "team/subTaskDelete",
     async ({ subTaskId }: { subTaskId: string }) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/subtask/delete/${subTaskId}`,
+        `${API_URL}/tasks/subtask/delete/${subTaskId}`,
         "delete"
       );
       return (response as { data: any[] }).data;
@@ -211,7 +207,7 @@ export const taskApi = {
     "team/addComment",
     async (commentData: CommentData) => {
       const response = await callApi(
-        `http://localhost:8000/tasks/add/comment`,
+        `${API_URL}/tasks/add/comment`,
         "post",
         commentData
       );

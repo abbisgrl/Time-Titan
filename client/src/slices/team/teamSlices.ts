@@ -2,6 +2,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import callApi from "../../misc/callApi";
 
+const API_URL = process.env.VITE_API_URL;
+
 // Define types
 export interface User {
   userId?: string;
@@ -49,7 +51,7 @@ export const teamApi = {
     }
   >("team/list", async ({ searchText }: { searchText?: string }) => {
     const response = await callApi(
-      `http://localhost:8000/team/list?searchQuery=${searchText || ""}`,
+      `${API_URL}/team/list?searchQuery=${searchText || ""}`,
       "get"
     );
     return (response as { data: User[] }).data;
@@ -57,11 +59,7 @@ export const teamApi = {
   create: createAsyncThunk<any[], TeamData>(
     "team/create",
     async (teamData: TeamData) => {
-      const response = await callApi(
-        "http://localhost:8000/team/add",
-        "post",
-        teamData
-      );
+      const response = await callApi(`${API_URL}/team/add`, "post", teamData);
       return (response as { data: any[] }).data;
     }
   ),
@@ -69,10 +67,7 @@ export const teamApi = {
   details: createAsyncThunk<User, string>(
     "team/details",
     async (userId: string) => {
-      const response = await callApi(
-        `http://localhost:8000/team/view/${userId}`,
-        "get"
-      );
+      const response = await callApi(`${API_URL}/team/view/${userId}`, "get");
       return (response as { data: User }).data;
     }
   ),
@@ -81,7 +76,7 @@ export const teamApi = {
     "team/update",
     async ({ teamData, userId }) => {
       const response = await callApi(
-        `http://localhost:8000/team/update/${userId}`,
+        `${API_URL}/team/update/${userId}`,
         "put",
         teamData
       );
@@ -93,7 +88,7 @@ export const teamApi = {
     "team/delete",
     async (userId: string) => {
       const response = await callApi(
-        `http://localhost:8000/team/delete/${userId}`,
+        `${API_URL}/team/delete/${userId}`,
         "delete"
       );
       return (response as { data: User }).data;
@@ -104,7 +99,7 @@ export const teamApi = {
     "team/projectsTeamList",
     async (projectId: string) => {
       const response = await callApi(
-        `http://localhost:8000/team/projects/team/list/${projectId}`,
+        `${API_URL}/team/projects/team/list/${projectId}`,
         "get"
       );
       return (response as { data: User }).data;
