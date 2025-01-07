@@ -56,7 +56,7 @@ const Dashboard = () => {
     }
   }, [openTaskDetails]);
 
-  useDidMountEffect(() => {
+  useEffect(() => {
     if (currentProject.projectId) {
       dispatch(dashboardApi.getDashboardCardDetails(currentProject.projectId));
       dispatch(dashboardApi.getDashboardTasksList(currentProject.projectId));

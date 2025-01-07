@@ -42,7 +42,7 @@ const TeamListing = () => {
     }));
   }, [projectData]);
 
-  useDidMountEffect(() => {
+  useEffect(() => {
     dispatch(teamApi.list({ searchText: "" }));
   }, []);
 

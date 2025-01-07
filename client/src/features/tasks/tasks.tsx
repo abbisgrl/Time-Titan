@@ -17,7 +17,6 @@ import BoardViewLoader from "./BoardViewLoader";
 import TeamListingLoader from "../team/teamListingLoader";
 import NoRecordsFound from "../../components/NoRecordsFound";
 import usePrevious from "../../misc/usePrevious";
-import useDidMountEffect from "../../misc/useDidMountEffect";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -60,7 +59,7 @@ const Tasks = () => {
   const openAddTaskPrev = usePrevious(openAddTask);
   const searchTextReducerPrev = usePrevious(searchTextReducer);
 
-  useDidMountEffect(() => {
+  useEffect(() => {
     fetchTaskList();
   }, [currentProject, status]);
 
