@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Logo from "../assets/logo.png";
+import ProfileIcon from "../assets/profileIcon.svg";
 import AddProject from "../features/project/AddProject";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
@@ -81,8 +82,11 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
+    console.log("Logout");
     Cookies.remove("token");
-    navigate("/login");
+    setTimeout(() => {
+      navigate("/login");
+    }, 1000);
   };
 
   return (
@@ -201,7 +205,7 @@ const Navbar = () => {
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                 >
                   <img
-                    src="https://static01.nyt.com/images/2019/11/08/world/08quebec/08quebec-superJumbo.jpg"
+                    src={ProfileIcon}
                     className="object-cover h-9 w-9 rounded-full mr-2 bg-gray-300"
                     alt="User Avatar"
                   />
