@@ -4,8 +4,8 @@
   "description": "Boilerplate for a NodeJs, Express, Typescript app",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon src/index.ts",
-    "dev": "npx nodemon src/index.ts",
+    "start": "npx nodemon src/app.ts",
+    "dev": "npx nodemon src/app.ts",
     "build:ui": "@powershell Remove-Item -Recurse -Force dist && cd ../frontend && npm run build && @powershell Copy-Item -Recurse dist ../backend",
     "lint": "eslint ."
   },

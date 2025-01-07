@@ -47,7 +47,7 @@ export const addProject = async (req: express.Request, res: express.Response) =>
         name,
         owner,
         projectId: uuidv4(),
-        members: [],
+        members: [] as string[],
         isActive: true,
         logo,
         description,
