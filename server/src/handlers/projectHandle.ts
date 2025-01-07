@@ -21,7 +21,7 @@ export const getProjectsList = async (req: UserRequest, res: express.Response) =
     res.status(200).json(projectsList);
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
+    return res.status(400).json({ status: false, message: (error as Error).message });
   }
 };
 

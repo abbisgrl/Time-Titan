@@ -21,7 +21,7 @@ export const getTeamList = async (req: UserRequest, res: express.Response) => {
     const users = await User.find(conditions, { tasks: 0, isAdmin: 0, _id: 0, isOwner: 0, password: 0 });
     res.status(200).json(users);
   } catch (error) {
-    return res.status(400).json({ status: false, message: error.message });
+    return res.status(400).json({ status: false, message: (error as Error).message });
   }
 };
 
@@ -149,6 +149,6 @@ export const getProjectsTeamList = async (req: express.Request, res: express.Res
     const users = await User.find({ projects: { $in: projectId }, isOwner: false }, { name: 1, userId: 1 });
     res.status(200).json(users);
   } catch (error) {
-    return res.status(400).json({ status: false, message: error.message });
+    return res.status(400).json({ status: false, message: (error as Error).message });
   }
 };
