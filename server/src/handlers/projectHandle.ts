@@ -80,7 +80,7 @@ export const deleteProject = async (req: express.Request, res: express.Response)
 };
 
 export const updateProject = async (req: express.Request, res: express.Response) => {
-  const { data } = req.body || {};
+  const data = req.body || {};
   const { projectId } = req.params || {};
 
   const projectDetails = await Project.aggregate([
@@ -93,5 +93,19 @@ export const updateProject = async (req: express.Request, res: express.Response)
   } else {
     await Project.updateOne({ projectId }, { $set: data });
     return res.status(200).send({ message: 'Project Updated successfully' });
+  }
+};
+
+export const viewProject = async (req: express.Request, res: express.Response) => {
+  const { projectId } = req.params || {};
+  const projectDetails = await Project.aggregate([
+    {
+      $match: { projectId },
+    },
+  ]);
+  if (!projectDetails) {
+    return res.status(401).send({ message: 'Project does not exists' });
+  } else {
+    return res.status(200).send({ message: 'Project details successfully', projectDetails: projectDetails[0] });
   }
 };

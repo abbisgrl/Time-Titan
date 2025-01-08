@@ -16,9 +16,10 @@ import usePrevious from "../misc/usePrevious";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false); // New state for profile dropdown
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [projectId, setProjectId] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,7 +37,12 @@ const Navbar = () => {
     (state: RootState) => state.projectReducer.list
   );
 
+  const { isAdmin, isOwner } = useSelector(
+    (state: RootState) => state.userDetails?.data
+  );
+
   const { name } = useSelector((state: RootState) => state.userDetails?.data);
+  const isProjectCrudAllowed = isAdmin || isOwner;
 
   useEffect(() => {
     if (projectListReducer.status === "success") {
@@ -75,6 +81,19 @@ const Navbar = () => {
       setSearchText("");
     }
   }, [location]);
+
+  useDidMountEffect(() => {
+    if (!open) {
+      setProjectId("");
+    }
+  }, [open]);
+
+  const handleEditProduct = (product: ProjectList) => {
+    setProjectId(product.projectId);
+    setTimeout(() => {
+      setOpen(true);
+    }, 500);
+  };
 
   const handleProductSelect = (product: ProjectList) => {
     setSelectedProduct(product);
@@ -144,6 +163,13 @@ const Navbar = () => {
                   onClick={toggleDropdown}
                   className="bg-gray-100 border border-gray-300 text-sm text-gray-700 rounded-lg px-3 py-1 flex items-center space-x-2 hover:bg-gray-200 transition"
                 >
+                  {selectedProduct?.logo && (
+                    <img
+                      src={selectedProduct.logo}
+                      alt={`${selectedProduct.name} logo`}
+                      className="w-4 h-4"
+                    />
+                  )}
                   <span>{selectedProduct?.name || "Select a project"}</span>
                   <svg
                     className={`w-4 h-4 transform transition ${
@@ -163,40 +189,77 @@ const Navbar = () => {
                   </svg>
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-64 bg-white shadow-md rounded-lg border border-gray-200 z-50">
                     {projectList.map((product) => (
-                      <p
+                      <div
                         key={product.projectId}
-                        onClick={() => handleProductSelect(product)}
-                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
                       >
-                        {product.name}
-                      </p>
+                        {/* Project logo and name */}
+                        <div
+                          className="flex items-center space-x-2"
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <img
+                            src={product.logo}
+                            alt={`${product.name} logo`}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-gray-700">{product.name}</span>
+                        </div>
+                        {/* Edit icon */}
+                        {isProjectCrudAllowed && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditProduct(product);
+                            }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.232 5.232l3.536 3.536M9 11l3.536-3.536a2 2 0 012.828 0l3.536 3.536a2 2 0 010 2.828L12 21H9v-3L4.464 11.536a2 2 0 010-2.828L9 5z"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
 
               {/* Add Project Button */}
-              <button
-                onClick={() => setOpen(!open)}
-                className="text-indigo-600 text-sm flex items-center space-x-1 hover:text-indigo-700 transition ml-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
+              {isProjectCrudAllowed && (
+                <button
+                  onClick={() => setOpen(!open)}
+                  className="text-indigo-600 text-sm flex items-center space-x-1 hover:text-indigo-700 transition ml-2"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-4 h-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </button>
+              )}
 
               {/* User Info */}
               <div className="relative ml-2">
@@ -226,7 +289,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <AddProject open={open} setOpen={setOpen} />
+      <AddProject open={open} setOpen={setOpen} projectId={projectId} />
     </div>
   );
 };

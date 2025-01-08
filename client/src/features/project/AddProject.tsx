@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ModalWrapper from "../../components/ModalWrapper";
 import Button from "../../components/Button";
@@ -11,15 +11,25 @@ import useDidMountEffect from "../../misc/useDidMountEffect";
 const AddProject = ({
   open,
   setOpen,
+  projectId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
+  projectId: string;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
   const createProjectData = useSelector(
     (state: RootState) => state.projectReducer?.create
+  );
+
+  const updateProjectData = useSelector(
+    (state: RootState) => state.projectReducer?.update
+  );
+
+  const viewProjectData = useSelector(
+    (state: RootState) => state.projectReducer?.view
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -35,12 +45,44 @@ const AddProject = ({
     logo: "",
   });
 
+  useEffect(() => {
+    if (projectId) {
+      dispatch(projectApi.viewTask({ projectId }));
+    }
+  }, [projectId]);
+
   useDidMountEffect(() => {
     if (createProjectData.status === "success") {
       dispatch(projectApi.list());
       setOpen(false);
+      setFormData({
+        name: "",
+        description: "",
+        logo: "",
+      });
     }
   }, [createProjectData.status]);
+
+  useDidMountEffect(() => {
+    if (updateProjectData.status === "success") {
+      dispatch(projectApi.list());
+      setOpen(false);
+      setFormData({
+        name: "",
+        description: "",
+        logo: "",
+      });
+    }
+  }, [updateProjectData.status]);
+
+  useDidMountEffect(() => {
+    if (viewProjectData.status === "success") {
+      const { name, description, logo } =
+        viewProjectData.data?.projectDetails || {};
+      const projectData = { name, description, logo };
+      setFormData((prevState) => ({ ...prevState, ...projectData }));
+    }
+  }, [viewProjectData]);
 
   const handleChange = (id: string, value: string | File) => {
     setFormData((data) => ({ ...data, [id]: value }));
@@ -64,7 +106,11 @@ const AddProject = ({
     const { data } = userDetails;
     const { name, email, userId } = data || {};
     const owner = { name, email, userId };
-    dispatch(projectApi.create({ ...formData, owner }));
+    if (projectId) {
+      dispatch(projectApi.update({ data: { ...formData, owner }, projectId }));
+    } else {
+      dispatch(projectApi.create({ ...formData, owner }));
+    }
   };
 
   const isLoading = false;
@@ -72,7 +118,19 @@ const AddProject = ({
 
   return (
     <>
-      <ModalWrapper open={open} setOpen={setOpen}>
+      <ModalWrapper
+        open={open}
+        setOpen={(value: boolean) => {
+          setOpen(value);
+          if (!value) {
+            setFormData({
+              name: "",
+              description: "",
+              logo: "",
+            });
+          }
+        }}
+      >
         <form onSubmit={handleOnSubmit} className="">
           <h2 className="text-base font-bold leading-6 text-gray-900 mb-4">
             {"Add Project"}

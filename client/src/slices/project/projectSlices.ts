@@ -16,6 +16,11 @@ export interface ProjectList {
   projectId: string;
 }
 
+export interface ViewProject {
+  message: string;
+  projectDetails: ProjectList;
+}
+
 interface ApiState<T> {
   status: "idle" | "pending" | "success" | "failed";
   data: T;
@@ -24,6 +29,8 @@ interface ApiState<T> {
 interface ProjectState {
   create: ApiState<Project[]>;
   list: ApiState<ProjectList[]>;
+  update: ApiState<ProjectList[]>;
+  view: ApiState<ViewProject>;
 }
 
 export const projectApi = {
@@ -39,15 +46,40 @@ export const projectApi = {
     }
   ),
 
+  update: createAsyncThunk<Project[], { data: object; projectId: string }>(
+    "project/update",
+    async ({ data, projectId }: { data: object; projectId: string }) => {
+      const response: any = await callApi(
+        `${API_URL}/project/update/${projectId}`,
+        "put",
+        data
+      );
+      return response.data;
+    }
+  ),
+
   list: createAsyncThunk<ProjectList[], void>("project/list", async () => {
     const response: any = await callApi(`${API_URL}/project/list`, "get");
     return response.data;
   }),
+
+  viewTask: createAsyncThunk<any[], { projectId: string }>(
+    "project/view",
+    async ({ projectId }: { projectId: string }) => {
+      const response = await callApi(
+        `${API_URL}/project/view/${projectId}`,
+        "get"
+      );
+      return (response as { data: any[] }).data;
+    }
+  ),
 };
 
 const initialState: ProjectState = {
   create: { status: "idle", data: [] },
   list: { status: "idle", data: [] },
+  update: { status: "idle", data: [] },
+  view: { status: "idle", data: {} as ViewProject },
 };
 
 const projectSlice = createSlice({
