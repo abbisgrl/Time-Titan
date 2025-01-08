@@ -98,7 +98,7 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
   const { userId } = req.params || {};
   const usersDetails = await User.aggregate([
     {
-      $match: { userId }, // First filter by email
+      $match: { userId },
     },
   ]);
   if (!usersDetails) {

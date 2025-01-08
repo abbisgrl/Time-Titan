@@ -157,7 +157,11 @@ const Tasks = () => {
           buttonLabel="No Project Created"
           onButtonClick={() => setOpenCreateProject(true)}
         />
-        <AddProject open={openCreateProject} setOpen={setOpenCreateProject} />
+        <AddProject
+          open={openCreateProject}
+          setOpen={setOpenCreateProject}
+          projectId=""
+        />
       </>
     );
   }

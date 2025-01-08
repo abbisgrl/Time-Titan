@@ -10,6 +10,7 @@ import { projectReducer } from "../slices/project/projectSlices";
 import { taskReducer } from "../slices/task/taskSlices";
 import { dashboardReducer } from "../slices/dashboard/dashboardSlice";
 import navbarReducer from "../slices/layout/navbar";
+import alertSlice from "../slices/layout/showAlert";
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     taskReducer,
     navbarReducer,
     dashboardReducer,
+    alertSlice,
   },
 });
 
