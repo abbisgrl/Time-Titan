@@ -54,6 +54,7 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
+      const REACT_URL = process.env.REACT_URL;
       const newUser = {
         name,
         email,
@@ -85,7 +86,7 @@ export const addTeamMember = async (req: express.Request, res: express.Response)
           console.error('Error during updates:', err);
         });
 
-      await sendEmail(email, 'inviteTeam', { inviteLink: `http://localhost:3000/create/password?email=${email}` });
+      await sendEmail(email, 'inviteTeam', { inviteLink: `${REACT_URL}/create/password?email=${email}` });
       return res.status(200).send({ message: 'New user created successfully' });
     }
   } catch (error) {
@@ -110,7 +111,7 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 };
 
 export const updateUser = async (req: express.Request, res: express.Response) => {
-  const { name, email, password, role, projects, ownerId } = req.body || {};
+  const { name, email, role, projects, ownerId } = req.body || {};
   const { userId } = req.params || {};
 
   const usersDetails = await User.aggregate([
@@ -118,7 +119,7 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
       $match: { userId },
     },
   ]);
-  const data = { name, email, password, role, projects, ownerId };
+  const data = { name, email, role, projects, ownerId };
   if (!usersDetails) {
     return res.status(401).send({ message: 'User does not exists' });
   } else {
