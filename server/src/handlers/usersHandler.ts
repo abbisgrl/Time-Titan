@@ -111,15 +111,33 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 };
 
 export const updateUser = async (req: express.Request, res: express.Response) => {
-  const { name, email, role, projects, ownerId } = req.body || {};
+  const { name, email, role, projects: newProjects, ownerId } = req.body || {};
   const { userId } = req.params || {};
 
-  const usersDetails = await User.aggregate([
+  const usersDetails: any = await User.aggregate([
     {
       $match: { userId },
     },
   ]);
-  const data = { name, email, role, projects, ownerId };
+  const data = { name, email, role, projects: newProjects, isAdmin: role === 'A' };
+  const currentProjects = usersDetails[0].projects || [];
+
+  // Find projects to add the user to
+  const projectsToAdd = newProjects.filter((projectId: string) => !currentProjects.includes(projectId));
+
+  // Find projects to remove the user from
+  const projectsToRemove = currentProjects.filter((projectId: string) => !newProjects.includes(projectId));
+
+  // Update the Project collection
+  await Promise.all([
+    // Add the user to the members array of new projects
+    Project.updateMany({ projectId: { $in: projectsToAdd } }, { $addToSet: { members: userId } }),
+
+    // Remove the user from the members array of removed projects
+    Project.updateMany({ projectId: { $in: projectsToRemove } }, { $pull: { members: userId } }),
+  ]);
+
+  console.dir({ usersDetails, data }, { depth: null });
   if (!usersDetails) {
     return res.status(401).send({ message: 'User does not exists' });
   } else {

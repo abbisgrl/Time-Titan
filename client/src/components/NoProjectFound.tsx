@@ -38,7 +38,7 @@ const NoProjectsFound = ({
           </p>
           <div className="mt-6">
             <button
-              onClick={() => alert("Contacting your admin...")}
+              onClick={() => {}}
               className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-600 transition duration-300"
             >
               Contact Admin

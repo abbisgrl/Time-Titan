@@ -17,6 +17,9 @@ export const loginHandler = async (req: express.Request, res: express.Response, 
       return next(handleError({ name: 'user not found', statusCode: 401, message: 'User not found' }, res));
     }
 
+    if (!user.password) {
+      return next(handleError({ name: 'user not found', statusCode: 401, message: 'Password not set' }, res));
+    }
     const validPassword = await bcrypt.compareSync(password, user.password);
     if (!validPassword) {
       return next(handleError({ name: 'user not found', statusCode: 401, message: 'Wrong password' }, res));

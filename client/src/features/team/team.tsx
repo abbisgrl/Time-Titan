@@ -148,7 +148,7 @@ const TeamListing = () => {
                   </div>
                   <div className="col-span-1 px-4 py-3 text-gray-800">
                     <div className="relative group">
-                      <div className="hidden group-hover:block absolute bg-gray-100 p-2 rounded shadow-md w-48 mt-6">
+                      <div className="hidden group-hover:block group-hover:z-[1000] absolute bg-gray-100 p-2 rounded shadow-md w-48 mt-6">
                         <ul className="text-sm">
                           {user.projects?.map(
                             (projectId: string, index: number) => {
