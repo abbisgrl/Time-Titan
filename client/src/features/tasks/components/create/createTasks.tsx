@@ -76,7 +76,7 @@ const CreateTask = ({
     }
   }, [open]);
 
-  useDidMountEffect(() => {
+  useEffect(() => {
     if (currentProject?.projectId) {
       dispatch(teamApi.projectTeamList(currentProject.projectId));
     }
